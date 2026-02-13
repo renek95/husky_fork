@@ -47,12 +47,14 @@ import org.openehealth.ipf.commons.ihe.xds.core.responses.QueryResponse;
 import org.openehealth.ipf.commons.ihe.xds.core.responses.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * Implementation of ch specific convenience communication
  *
  */
+@Component
 public class ConvenienceCommunicationAt extends ConvenienceCommunication {
 
 	/** The SLF4J logger instance. */
@@ -356,7 +358,7 @@ public class ConvenienceCommunicationAt extends ConvenienceCommunication {
 	public QueryResponse queryDocuments(Identificator patientId, SecurityHeaderElement assertion, String messageId)
 			throws Exception {
 		return this.queryDocuments(new FindDocumentsQuery(patientId, AvailabilityStatus.APPROVED), assertion,
-				messageId);
+				messageId, null);
 	}
 
 	/**

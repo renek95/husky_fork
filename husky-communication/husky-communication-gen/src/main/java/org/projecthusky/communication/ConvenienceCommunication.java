@@ -785,7 +785,7 @@ public class ConvenienceCommunication extends CamelService {
 	 */
 	public QueryResponse queryDocumentReferencesOnly(AbstractStoredQuery queryParameter,
 			SecurityHeaderElement securityHeader, String messageId) throws Exception {
-		return queryDocumentQuery(queryParameter, securityHeader, QueryReturnType.OBJECT_REF, messageId);
+		return queryDocumentQuery(queryParameter, securityHeader, QueryReturnType.OBJECT_REF, messageId, null);
 	}
 
 	/**
@@ -799,8 +799,8 @@ public class ConvenienceCommunication extends CamelService {
 	 * @throws Exception
 	 */
 	public QueryResponse queryDocuments(AbstractStoredQuery queryParameter, SecurityHeaderElement securityHeader,
-			String messageId) throws Exception {
-		return queryDocumentQuery(queryParameter, securityHeader, QueryReturnType.LEAF_CLASS, messageId);
+			String messageId, String xmlAssertion) throws Exception {
+		return queryDocumentQuery(queryParameter, securityHeader, QueryReturnType.LEAF_CLASS, messageId, xmlAssertion);
 	}
 
 	/**
@@ -816,7 +816,7 @@ public class ConvenienceCommunication extends CamelService {
 	 * @throws Exception
 	 */
 	protected QueryResponse queryDocumentQuery(AbstractStoredQuery query, SecurityHeaderElement securityHeader,
-			QueryReturnType returnType, String messageId) throws Exception {
+			QueryReturnType returnType, String messageId, String xmlAssertion) throws Exception {
 		AffinityDomain affinityDomain = getAffinityDomain();
 		final var queryRegistry = new QueryRegistry(query.getIpfQuery());
 		queryRegistry.setReturnType(returnType);
@@ -826,7 +826,7 @@ public class ConvenienceCommunication extends CamelService {
 				atnaConfigMode.equals(AtnaConfigMode.SECURE));
 		log.info(LOG_SEND_REQUEST, endpoint);
 
-		final var exchange = send(endpoint, queryRegistry, securityHeader, messageId, null);
+		final var exchange = send(endpoint, queryRegistry, securityHeader, messageId, null, xmlAssertion);
 
 		return exchange.getMessage().getBody(QueryResponse.class);
 	}
@@ -843,7 +843,7 @@ public class ConvenienceCommunication extends CamelService {
 	 */
 	public QueryResponse queryFolders(FindFoldersStoredQuery queryParameter, SecurityHeaderElement security,
 			String messageId) throws Exception {
-		return queryDocumentQuery(queryParameter, security, QueryReturnType.LEAF_CLASS, messageId);
+		return queryDocumentQuery(queryParameter, security, QueryReturnType.LEAF_CLASS, messageId, null);
 	}
 
 	/**

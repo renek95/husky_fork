@@ -29,6 +29,8 @@ public class XUserAssertionResponseBuilderImpl implements XUserAssertionResponse
 
 	private RequestSecurityTokenResponse response;
 
+    private String as;
+
 	/**
 	 * Default constructor.
 	 */
@@ -38,12 +40,18 @@ public class XUserAssertionResponseBuilderImpl implements XUserAssertionResponse
 
 	@Override
 	public XUserAssertionResponse create() {
-		return new XUserAssertionResponseImpl(response);
+		return new XUserAssertionResponseImpl(as, response);
 	}
 
 	@Override
 	public XUserAssertionResponse create(RequestSecurityTokenResponse aInternalObject) {
-		return new XUserAssertionResponseImpl(aInternalObject);
+		return new XUserAssertionResponseImpl(as, aInternalObject);
 	}
+
+    public XUserAssertionResponseBuilderImpl as(String as) {
+        this.as = as;
+
+        return this;
+    }
 
 }

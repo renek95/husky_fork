@@ -10,18 +10,13 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.projecthusky.common.hl7cdar2.AD;
-import org.projecthusky.common.hl7cdar2.CS;
-import org.projecthusky.common.hl7cdar2.II;
-import org.projecthusky.common.hl7cdar2.POCDMT000040InfrastructureRootTypeId;
-import org.projecthusky.common.hl7cdar2.POCDMT000040Organization;
-import org.projecthusky.common.hl7cdar2.TEL;
+import org.projecthusky.common.hl7cdar2.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "POCD_MT000040.EpimsPatientRole", namespace = "urn:hl7-org:v3", propOrder = { "realmCode", "typeId",
 		"templateId", "id", "addr", "telecom",
 		"patient", "providerOrganization" })
-public class EpimsPatientRole {
+public class EpimsPatientRole extends POCDMT000040PatientRole {
 
 	protected List<CS> realmCode;
 	protected POCDMT000040InfrastructureRootTypeId typeId;

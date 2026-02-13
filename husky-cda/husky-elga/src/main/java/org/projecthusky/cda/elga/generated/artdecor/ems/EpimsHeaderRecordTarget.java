@@ -20,10 +20,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.projecthusky.common.hl7cdar2.CS;
-import org.projecthusky.common.hl7cdar2.II;
-import org.projecthusky.common.hl7cdar2.POCDMT000040InfrastructureRootTypeId;
-import org.projecthusky.common.hl7cdar2.POCDMT000040PatientRole;
+import org.projecthusky.common.hl7cdar2.*;
 
 /**
  * epims_header_RecordTarget
@@ -39,7 +36,7 @@ import org.projecthusky.common.hl7cdar2.POCDMT000040PatientRole;
 @XmlType(name = "POCD_MT000040.EpimsHeaderRecordTarget", namespace = "urn:hl7-org:v3", propOrder = { "realmCode",
 		"typeId",
 		"templateId", "patientRole" })
-public class EpimsHeaderRecordTarget {
+public class EpimsHeaderRecordTarget extends POCDMT000040RecordTarget {
 
 	protected List<CS> realmCode;
 	protected POCDMT000040InfrastructureRootTypeId typeId;

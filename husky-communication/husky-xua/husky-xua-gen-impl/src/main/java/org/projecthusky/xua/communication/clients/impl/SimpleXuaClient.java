@@ -10,15 +10,24 @@
  */
 package org.projecthusky.xua.communication.clients.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.xpath.XPathExpressionException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.*;
 
 
 import org.projecthusky.xua.communication.clients.XuaClient;
@@ -46,9 +55,12 @@ import org.opensaml.soap.wstrust.RequestSecurityTokenResponseCollection;
 import org.opensaml.soap.wstrust.WSTrustConstants;
 import org.opensaml.soap.wstrust.impl.RequestSecurityTokenResponseCollectionUnmarshaller;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import net.shibboleth.shared.xml.XMLParserException;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * <!-- @formatter:off -->
@@ -109,6 +121,47 @@ public class SimpleXuaClient extends AbstractSoapClient<List<XUserAssertionRespo
 	protected List<XUserAssertionResponse> parseResponse(String httpResponse)
 			throws ClientSendException {
 		try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            DocumentBuilder db = dbf.newDocumentBuilder();
+
+            Document doc = db.parse(
+                    new ByteArrayInputStream(httpResponse.getBytes(StandardCharsets.UTF_8))
+            );
+
+            XPathFactory xpf = XPathFactory.newInstance();
+            XPath xpath = xpf.newXPath();
+
+// Namespace-Resolver
+            xpath.setNamespaceContext(new NamespaceContext() {
+                @Override
+                public String getNamespaceURI(String prefix) {
+                    return switch (prefix) {
+                        case "saml2" -> "urn:oasis:names:tc:SAML:2.0:assertion";
+                        default -> XMLConstants.NULL_NS_URI;
+                    };
+                }
+
+                @Override public String getPrefix(String uri) { return null; }
+                @Override public Iterator<String> getPrefixes(String uri) { return null; }
+            });
+
+            Node assertionNode = (Node) xpath.evaluate(
+                    "//saml2:Assertion",
+                    doc,
+                    XPathConstants.NODE
+            );
+
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.setOutputProperty(OutputKeys.INDENT, "no");
+
+            StringWriter writer = new StringWriter();
+            transformer.transform(new DOMSource(assertionNode), new StreamResult(writer));
+
+            String samlAssertionXml = writer.toString();
+
 			final var reponseElement = getResponseElement(httpResponse, WSTrustConstants.WST_NS,
 					RequestSecurityTokenResponseCollection.ELEMENT_LOCAL_NAME);
 
@@ -122,15 +175,25 @@ public class SimpleXuaClient extends AbstractSoapClient<List<XUserAssertionRespo
 			final List<XUserAssertionResponse> retVal = new ArrayList<>();
 
 			wstResponses.forEach(c -> 
-				retVal.add(new XUserAssertionResponseBuilderImpl().create(c))
+				retVal.add(new XUserAssertionResponseBuilderImpl().as(samlAssertionXml).create(c))
 			);
 
 			return retVal;
 		} catch (UnsupportedOperationException | TransformerFactoryConfigurationError | UnmarshallingException
 				| XPathExpressionException | XMLParserException e) {
 			throw new ClientSendException(e);
-		}
-	}
+		} catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        } catch (TransformerConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (TransformerException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 	@Override
 	public List<XUserAssertionResponse> send(SecurityHeaderElement aSecurityHeaderElement,

@@ -36,10 +36,22 @@ public class XUserAssertionResponseImpl implements XUserAssertionResponse,
 
 	private RequestSecurityTokenResponse responseCollection;
 
+    private String as;
+
+    protected XUserAssertionResponseImpl(String as,
+            RequestSecurityTokenResponse aRequestSecurityTokenResponse) {
+        this.as = as;
+        responseCollection = aRequestSecurityTokenResponse;
+    }
+
 	protected XUserAssertionResponseImpl(
 			RequestSecurityTokenResponse aRequestSecurityTokenResponse) {
 		responseCollection = aRequestSecurityTokenResponse;
 	}
+
+    public String getAs() {
+        return as;
+    }
 
 	@Override
 	public Assertion getAssertion() {

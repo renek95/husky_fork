@@ -149,7 +149,4 @@ public class PatientCdaAt extends PatientAt {
 		gender.setDisplayName(genderEnum.getDisplayName());
 		return gender;
 	}
-
-
-
 }

@@ -1,5 +1,7 @@
 package org.projecthusky.communication;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,6 +14,7 @@ import org.apache.camel.CamelContextAware;
 import org.apache.camel.Exchange;
 import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.util.CastUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.headers.Header;
 import org.apache.cxf.headers.Header.Direction;
 import org.projecthusky.common.utils.xml.XmlFactories;
@@ -24,6 +27,10 @@ import org.opensaml.core.xml.XMLObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public abstract class CamelService implements CamelContextAware {
 
@@ -55,7 +62,46 @@ public abstract class CamelService implements CamelContextAware {
 		this.auditContext = auditContext;
 	}
 
-	protected void addWssHeader(SecurityHeaderElement securityHeaderElement, Exchange exchange)
+    protected void addWssHeader(String securityXml, Exchange exchange) throws IOException, SAXException, ParserConfigurationException {
+        var docBuilder = XmlFactories.newSafeDocumentBuilder();
+        var doc = docBuilder.parse(new InputSource(new StringReader(securityXml)));
+
+        Element securityElement = doc.getDocumentElement();
+
+        var wsseElement = docBuilder.newDocument().createElementNS(
+                "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd",
+                "wsse:Security"
+        );
+
+        Node importedNode = wsseElement.getOwnerDocument().importNode(securityElement, true);
+        wsseElement.appendChild(importedNode);
+
+        var wsseQName = new QName(
+                "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd",
+                "Security",
+                "wsse"
+        );
+
+        Map<QName, Header> soapHeaders = CastUtils.cast(
+                (Map<QName, Header>) exchange.getIn()
+                        .getHeader(AbstractWsEndpoint.OUTGOING_SOAP_HEADERS)
+        );
+
+        if (soapHeaders == null) {
+            soapHeaders = new HashMap<>();
+        }
+
+        try {
+            Header newHeader = new Header(wsseQName, wsseElement);
+            newHeader.setDirection(Direction.DIRECTION_OUT);
+            soapHeaders.put(wsseQName, newHeader);
+            exchange.getIn().setHeader(AbstractWsEndpoint.OUTGOING_SOAP_HEADERS, soapHeaders);
+        } catch (Exception e) {
+            log.error("Exception caught while creating the WSS header", e);
+        }
+    }
+
+    protected void addWssHeader(SecurityHeaderElement securityHeaderElement, Exchange exchange)
 			throws SerializeException, ParserConfigurationException {
 
 		var wssElement = new OpenSaml2SerializerImpl()
@@ -110,10 +156,15 @@ public abstract class CamelService implements CamelContextAware {
 		exchange.getIn().setHeader(AbstractWsEndpoint.OUTGOING_HTTP_HEADERS, outgoingHeaders);
 	}
 
+    protected Exchange send(String endpoint, Object body, SecurityHeaderElement securityHeaderElement, String messageId,
+                            Map<String, String> outgoingHttpHeaders) throws Exception {
+        return send(endpoint, body, securityHeaderElement, messageId, outgoingHttpHeaders, null);
+    }
+
 	/*exception is thrown by external library call*/
 	@SuppressWarnings("java:S112")
 	protected Exchange send(String endpoint, Object body, SecurityHeaderElement securityHeaderElement, String messageId,
-			Map<String, String> outgoingHttpHeaders) throws Exception {
+			Map<String, String> outgoingHttpHeaders, String xmlAssertion) throws Exception {
 
 		Exchange exchange = new DefaultExchange(camelContext);
 		exchange.getIn().setBody(body);
@@ -123,6 +174,11 @@ public abstract class CamelService implements CamelContextAware {
 			addWssHeader(securityHeaderElement, exchange);
 		}
 
+        if (StringUtils.isNotEmpty(xmlAssertion)) {
+            log.debug("build wss header from string");
+            addWssHeader(xmlAssertion, exchange);
+        }
+//
 		if (outgoingHttpHeaders != null && !outgoingHttpHeaders.isEmpty()) {
 			log.debug("add outgoing http headers");
 			addHttpHeader(exchange, outgoingHttpHeaders);

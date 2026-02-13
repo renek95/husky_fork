@@ -20,23 +20,14 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.projecthusky.common.hl7cdar2.BL;
-import org.projecthusky.common.hl7cdar2.CE;
-import org.projecthusky.common.hl7cdar2.CS;
-import org.projecthusky.common.hl7cdar2.II;
-import org.projecthusky.common.hl7cdar2.PN;
-import org.projecthusky.common.hl7cdar2.POCDMT000040Birthplace;
-import org.projecthusky.common.hl7cdar2.POCDMT000040Guardian;
-import org.projecthusky.common.hl7cdar2.POCDMT000040InfrastructureRootTypeId;
-import org.projecthusky.common.hl7cdar2.POCDMT000040LanguageCommunication;
-import org.projecthusky.common.hl7cdar2.TS;
+import org.projecthusky.common.hl7cdar2.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "POCD_MT000040.EpimsPatient", namespace = "urn:hl7-org:v3", propOrder = { "realmCode", "typeId",
 		"templateId", "id", "name",
 		"administrativeGenderCode", "birthTime", "maritalStatusCode", "religiousAffiliationCode", "raceCode",
 		"ethnicGroupCode", "guardian", "birthplace", "languageCommunication", "deceasedInd", "deceasedTime" })
-public class EpimsPatient {
+public class EpimsPatient extends POCDMT000040Patient {
 
 	protected List<CS> realmCode;
 	protected POCDMT000040InfrastructureRootTypeId typeId;

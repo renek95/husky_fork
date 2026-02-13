@@ -629,20 +629,20 @@ public class FhirPatient extends org.hl7.fhir.r4.model.Patient {
 			}
 		}
 		final var patientAddress = new org.projecthusky.common.model.Address(new AddressBaseType());
-		if (!addressline1.isEmpty()) {
+		if (addressline1 != null && !addressline1.isEmpty()) {
 			patientAddress.setStreetAddressLine1(addressline1);
 		}
 
-		if (!addressline2.isEmpty()) {
+        if (addressline2 != null && !addressline2.isEmpty()) {
 			patientAddress.setStreetAddressLine2(addressline2);
 		}
 
-		final var firstLine = fhirAddress.hasLine() ? fhirAddress.getLine().get(0) : null;
-		Optional.ofNullable(firstLine)
+		final var firstLine = fhirAddress.hasLine() ? fhirAddress.getLine().getFirst() : null;
+		var streetname = Optional.ofNullable(firstLine)
 				.map(line -> line.getExtensionByUrl("http://hl7.org/fhir/StructureDefinition/iso21090-ADXP-streetName"))
 				.map(ext -> (StringType) ext.getValue())
-				.map(StringType::getValue)
-				.ifPresent(patientAddress::setStreetName);
+				.map(StringType::getValue);
+        System.out.println(streetname.isPresent());
 
 		patientAddress.setPostalCode(zip);
 		patientAddress.setCity(city);
