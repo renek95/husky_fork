@@ -13,11 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.processing.Generated;
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlType;
+
+import jakarta.xml.bind.annotation.*;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.projecthusky.common.hl7cdar2.*;
@@ -33,9 +30,8 @@ import org.projecthusky.common.hl7cdar2.*;
  */
 @Generated(value = "org.projecthusky.codegenerator.cda.ArtDecor2JavaGenerator", date = "2022-02-01")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "POCD_MT000040.EpimsHeaderRecordTarget", namespace = "urn:hl7-org:v3", propOrder = { "realmCode",
-		"typeId",
-		"templateId", "patientRole" })
+@XmlType(propOrder = { "realmCode", "typeId", "templateId", "patientRole" })
+@XmlSeeAlso({ POCDMT000040RecordTarget.class})
 public class EpimsHeaderRecordTarget extends POCDMT000040RecordTarget {
 
 	protected List<CS> realmCode;

@@ -22,28 +22,28 @@ public enum TypeCode implements ValueSetEnumInterfaceAt {
     NURSE_DISCHARGE_SUMMARY("34745-0", LOINC.getCodeSystemId(), "Nurse Discharge summary",
             "Entlassungsbrief Pflege"),
 
-    DIAGNOSTIC_IMAGING_STUDY("18748-4", LOINC.getCodeSystemId(), "Diagnostic Imaging Report",
+    DIAGNOSTIC_IMAGING_STUDY("18748-4", LOINC.getCodeSystemId(), "Diagnostic imaging study",
             "Befund bildgebende Diagnostik"),
 
-    CT_UNSPECIFIED_BODY_REGION("25045-6", LOINC.getCodeSystemId(), "CT Unspecified body region",
+    CT_UNSPECIFIED_BODY_REGION("25045-6", LOINC.getCodeSystemId(), "Unspecified body region CT",
             "Computertomographie-Befund"),
 
-    MR_UNSPECIFIED_BODY_REGION("25056-3", LOINC.getCodeSystemId(), "MR Unspecified body region",
+    MR_UNSPECIFIED_BODY_REGION("25056-3", LOINC.getCodeSystemId(), "Unspecified body region MRI",
             "Magnetresonanztomographie-Befund"),
 
-    US_UNSPECIFIED_BODY_REGION("25061-3", LOINC.getCodeSystemId(), "US Unspecified body region",
+    US_UNSPECIFIED_BODY_REGION("25061-3", LOINC.getCodeSystemId(), "Unspecified body region US",
             "BeUltraschall-Befund"),
 
     NM_UNSPECIFIED_BODY_REGION("49118-3", LOINC.getCodeSystemId(),
-            "NM Unspecified body region Views", "Nuklearmedizinischer Befund"),
+            "Unspecified body region Scan", "Nuklearmedizinischer Befund"),
 
-    PT_UNSPECIFIED_BODY_REGION("44136-0", LOINC.getCodeSystemId(), "PT Unspecified body region",
+    PT_UNSPECIFIED_BODY_REGION("44136-0", LOINC.getCodeSystemId(), "Unspecified body region PET",
             "Positronen-Emissions-Tomographie-Befund"),
 
     CARDIAC_CATHETERIZATION_STUDY("18745-0", LOINC.getCodeSystemId(),
             "Cardiac catheterization study", "Herzkatheter-Befund"),
 
-    US_HEART("42148-7", LOINC.getCodeSystemId(), "US Heart", "Echokardiographie-Befund"),
+    US_HEART("42148-7", LOINC.getCodeSystemId(), "Heart US", "Echokardiographie-Befund"),
 
     RADIOLOGY_STUDY_OBSERVATION("18782-3", LOINC.getCodeSystemId(),
             "Radiology Study observation (narrative)", "Radiologie-Befund"),
@@ -52,7 +52,7 @@ public enum TypeCode implements ValueSetEnumInterfaceAt {
             "Kolonoskopie-Befund"),
 
     US_PELVIS_FETUS_FOR_PREGNANCY("11525-3", LOINC.getCodeSystemId(),
-            "US Pelvis Fetus for pregnancy", "Geburtshilfliche Ultraschalluntersuchung"),
+            "US Pelvis and Fetus for pregnancy", "Geburtshilfliche Ultraschalluntersuchung"),
 
     PRESCRIPTION_FOR_MEDICAITON("57833-6", LOINC.getCodeSystemId(), "Prescription for medication",
             "Rezept"),
@@ -83,6 +83,9 @@ public enum TypeCode implements ValueSetEnumInterfaceAt {
             "Telemedizin Fortschrittbericht"),
 
     TELEHEALTH_SUMMARY_NOTE("75498-6", LOINC.getCodeSystemId(), "Telehealth Summary Note",
+            "Telemedizin Endbericht"),
+
+    KEY_IMAGES_DOCUMENT_RADIOLOGY("55113-5", LOINC.getCodeSystemId(), "Key images Document Radiology",
             "Telemedizin Endbericht");
 
     /**

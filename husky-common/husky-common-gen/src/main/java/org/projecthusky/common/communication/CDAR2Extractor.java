@@ -1246,11 +1246,11 @@ public class CDAR2Extractor {
 			code.setDisplayName(new LocalizedString(docCode.getDisplayName()));
 		}
 
-		if (docCode.getCodeSystemName() != null) {
+        if (docCode.getCodeSystem() != null) {
+            code.setSchemeName(docCode.getCodeSystem());
+        } else {
 			code.setSchemeName(docCode.getCodeSystemName());
-		} else {
-			code.setSchemeName(docCode.getCodeSystem());
-		}
+        }
 
 		return code;
 	}

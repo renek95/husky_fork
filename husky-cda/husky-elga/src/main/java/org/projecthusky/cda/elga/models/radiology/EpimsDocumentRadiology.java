@@ -89,7 +89,6 @@ public class EpimsDocumentRadiology extends POCDMT000040ClinicalDocument {
 		getTemplateId().add(createHl7TemplateIdFixedValue(TemplateId.ALLGEMEIN.getId()));
 		getTemplateId().add(createHl7TemplateIdFixedValue(TemplateId.BILDGEBENDE_DIAGNOSTIK.getId()));
 		getTemplateId().add(createHl7TemplateIdFixedValue(TemplateId.BD_EIS_BASIC.getId()));
-        //Möglicherweise zusätzliche Template-ID?
 	}
 
 	/**

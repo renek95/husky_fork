@@ -15,6 +15,7 @@ import org.projecthusky.cda.elga.models.PractitionerCdaAt;
 import org.projecthusky.cda.elga.models.ems.*;
 import org.projecthusky.cda.elga.utils.DateTimeUtils;
 import org.projecthusky.common.at.OrganizationAt;
+import org.projecthusky.common.at.enums.ClassCode;
 import org.projecthusky.common.at.enums.TypeCode;
 import org.projecthusky.common.hl7cdar2.*;
 import org.projecthusky.common.model.Code;
@@ -33,6 +34,7 @@ public class Radiology extends BaseDocument {
     private Identificator setId;
     private int version;
     private TypeCode code;
+    private ClassCode classCode;
     private String title;
     private ZonedDateTime creationTime;
     private PatientCdaAt patient;
@@ -61,6 +63,7 @@ public class Radiology extends BaseDocument {
     private String addendum;
 
     private Float doseInMsv;
+    private Float biradsVal;
 
     private ZonedDateTime startImaging;
     private ZonedDateTime stopImaging;
@@ -111,6 +114,14 @@ public class Radiology extends BaseDocument {
 
     public void setCode(TypeCode code) {
         this.code = code;
+    }
+
+    public ClassCode getClassCode() {
+        return classCode;
+    }
+
+    public void setClassCode(ClassCode classCode) {
+        this.classCode = classCode;
     }
 
     public String getTitle() {
@@ -441,6 +452,14 @@ public class Radiology extends BaseDocument {
         this.doseInMsv = doseInMsv;
     }
 
+    public Float getBiradsVal() {
+        return biradsVal;
+    }
+
+    public void setBiradsVal(Float biradsVal) {
+        this.biradsVal = biradsVal;
+    }
+
     protected POCDMT000040DocumentationOf getAtcdabbrHeaderDocumentationOfServiceEvent(
             ZonedDateTime start,
             ZonedDateTime stop,
@@ -595,7 +614,10 @@ public class Radiology extends BaseDocument {
         writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); // This is required by the CCE spec
         writer.write("<?xml-stylesheet type=\"text/xsl\" href=\"ELGA_Stylesheet_v1.0.xsl\"?>\n");
         marshaller.marshal(this.getDocument(), writer);
-        return writer.toString();
+
+        String cda = writer.toString();
+        cda = cda.replace("xsi:type=\"epimsHeaderRecordTarget\" ", "");
+        return cda;
     }
 
     public void addParticipant(HeaderParticipantAnsprechpartner participant) {
@@ -642,7 +664,13 @@ public class Radiology extends BaseDocument {
         if (StringUtils.isNotEmpty(this.investigation)) {
             String effectiveTime = DateTimes.toDatetimeTs(this.startImaging, ZoneId.systemDefault()).getValue();
 
-            structuredBody.getComponent().add(createComp3WithDoseTable(new Investigation(this.doseInMsv, effectiveTime), investigation, "Aktuelle Untersuchung", this.doseInMsv));
+            this.investigation = "Technik: Siemens Magnetom; Untersuchungsparameter: axial gewichtete T1, T2-gewichtete TSE- und ultraschnelle GRE-Sequenzen vor und nach iv. Applikation von Clariscan, Substraktion, dynamische Kontrastmittelauswertung; axiale EPI-gewichtete Diffusionssequenz";
+
+            if (this.doseInMsv != null) {
+                structuredBody.getComponent().add(createComp3WithDoseTable(new Investigation(this.doseInMsv, effectiveTime), investigation, "Aktuelle Untersuchung", this.doseInMsv));
+            } else {
+                structuredBody.getComponent().add(createComp3FreeText(new Investigation(this.doseInMsv, effectiveTime), investigation, "Aktuelle Untersuchung"));
+            }
         }
 
         if (StringUtils.isNotEmpty(this.previousInvestigations)) {
@@ -658,9 +686,20 @@ public class Radiology extends BaseDocument {
         }
 
         if (StringUtils.isNotEmpty(this.findings)) {
-            structuredBody.getComponent().add(createComp3FreeText(new Findings(), findings, "Befund"));
-            //TODO Codierung des Befundtextes 0..1
-            //TODO BIRADS Klassifikation 0..1
+            if (this.biradsVal != null) {
+//                this.findings = "Dichter fibrozystisch transformierter Drüsenkörper bilateral, keine Läsionen mit malignitätstypischer Kontrastmittelkinetik und keine soliden expansiven Läsionen nachweisbar. Die Thoraxwand unauffällig, in den mitdargestellten Anteil der Axillen keine pathologisch vergrößerten Lymphknoten nachweisbar.";
+
+                Findings findingObj = new Findings();
+                findingObj.addClassificationTable();
+                findingObj.addClassificationRow("BI-RADS", "birads", this.biradsVal.toString());
+
+                String effectiveTime = DateTimes.toDatetimeTs(this.startImaging, ZoneId.systemDefault()).getValue();
+                findingObj.addFindingEntry("finding-1");
+                findingObj.addBiradsEntry("II.AC.b.1", effectiveTime);
+                structuredBody.getComponent().add(createComp3WithMammo(findingObj, findings, "Befund", this.biradsVal));
+            } else {
+                structuredBody.getComponent().add(createComp3FreeText(new Findings(), findings, "Befund"));
+            }
         }
 
         if (StringUtils.isNotEmpty(this.summary)) {

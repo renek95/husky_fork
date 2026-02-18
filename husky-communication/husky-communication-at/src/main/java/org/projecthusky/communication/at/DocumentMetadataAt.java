@@ -24,6 +24,7 @@ import org.projecthusky.common.at.enums.PracticeSettingCode;
 import org.projecthusky.common.at.enums.TypeCode;
 import org.projecthusky.common.at.utils.XdsMetadataUtilAt;
 import org.projecthusky.common.enums.LanguageCode;
+import org.projecthusky.common.hl7cdar2.CE;
 import org.projecthusky.common.hl7cdar2.POCDMT000040ClinicalDocument;
 import org.projecthusky.common.model.Identificator;
 import org.projecthusky.common.utils.XdsMetadataUtil;
@@ -83,7 +84,9 @@ public class DocumentMetadataAt extends org.projecthusky.common.communication.Do
 		
 		getDocumentEntry().setLegalAuthenticator(extractor.extractLegalAuthenticator());
 
-		setTypeCode(extractor.extractClassCode(), extractor.extractTypeCode(), extractor.extractTypeCodeOfTranslation(),
+        CE classCode = ClassCode.DIAGNOSTIC_IMAGE_STUDY.getCE();
+        LocalizedString localizedString = new LocalizedString(classCode.getDisplayName());
+		setTypeCode(new Code(classCode.getCode(), localizedString, classCode.getCodeSystem()), extractor.extractTypeCode(), extractor.extractTypeCodeOfTranslation(),
 				urnOidNeeded);
 
 		setCodedLanguage(extractor.extractLanguageCode());

@@ -856,7 +856,12 @@ public class ConvenienceCommunication extends CamelService {
 	 */
 	public RetrievedDocumentSet retrieveDocument(DocumentRequest docReq, SecurityHeaderElement security,
 			String messageId) throws Exception {
-		return retrieveDocuments(new DocumentRequest[] { docReq }, security, messageId);
+        return retrieveDocuments(new DocumentRequest[] { docReq }, security, messageId);
+    }
+
+	public RetrievedDocumentSet retrieveDocument(DocumentRequest docReq, SecurityHeaderElement security,
+			String messageId, String xmlAssertion) throws Exception {
+		return retrieveDocuments(new DocumentRequest[] { docReq }, security, messageId, xmlAssertion);
 	}
 
 	/**
@@ -869,6 +874,11 @@ public class ConvenienceCommunication extends CamelService {
 	 */
 	public RetrievedDocumentSet retrieveDocuments(DocumentRequest[] docReq, SecurityHeaderElement security,
 			String messageId) throws Exception {
+        return retrieveDocuments(docReq, security, messageId, null);
+    }
+
+	public RetrievedDocumentSet retrieveDocuments(DocumentRequest[] docReq, SecurityHeaderElement security,
+			String messageId, String xmlAssertion) throws Exception {
 		AffinityDomain affinityDomain = getAffinityDomain();
 		final var retrieveDocumentSet = new RetrieveDocumentSet();
 
@@ -883,7 +893,7 @@ public class ConvenienceCommunication extends CamelService {
 
 		log.info(LOG_SEND_REQUEST, endpoint);
 
-		final var exchange = send(endpoint, retrieveDocumentSet, security, messageId, null);
+		final var exchange = send(endpoint, retrieveDocumentSet, security, messageId, null, xmlAssertion);
 
 		return exchange.getMessage().getBody(RetrievedDocumentSet.class);
 	}

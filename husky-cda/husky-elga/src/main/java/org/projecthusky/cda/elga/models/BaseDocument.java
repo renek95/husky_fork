@@ -103,6 +103,74 @@ public class BaseDocument  {
         return comp3;
     }
 
+    protected POCDMT000040Component3 createComp3WithMammo(POCDMT000040Section section, String text, String titleText, Float doseValue) {
+        POCDMT000040Component3 comp3 = new POCDMT000040Component3();
+        StrucDocText structext = new StrucDocText();
+        ObjectFactory objectFactory = new ObjectFactory();
+
+        // Paragraph mit Text erstellen
+        StrucDocParagraph paragraph = new StrucDocParagraph();
+        StrucDocContent content = new StrucDocContent();
+        content.setID("finding-1");
+        content.getContent().add(text != null ? text : "Informationen zur Patientendosis");
+
+        JAXBElement<StrucDocContent> contentElement = objectFactory.createStrucDocTextContent(content);
+        paragraph.getContent().add(contentElement);
+        JAXBElement<StrucDocParagraph> paragraphElement = objectFactory.createStrucDocTextParagraph(paragraph);
+        structext.getContent().add(paragraphElement);
+
+        // Tabelle erstellen
+        StrucDocTable table = new StrucDocTable();
+
+        // Thead erstellen
+        StrucDocThead thead = new StrucDocThead();
+        StrucDocTr headerRow = new StrucDocTr();
+
+        StrucDocTh th1 = new StrucDocTh();
+        th1.getContent().add("Klassifikation");
+        headerRow.getThOrTd().add(th1);
+
+        StrucDocTh th2 = new StrucDocTh();
+        th2.getContent().add("BI-RADS");
+        headerRow.getThOrTd().add(th2);
+
+        thead.getTr().add(headerRow);
+        table.setThead(thead);
+
+        // Tbody erstellen
+        StrucDocTbody tbody = new StrucDocTbody();
+
+        // Zeile für Effektive Dosis
+        if (doseValue != null && doseValue > 0) {
+            StrucDocTr dataRow = new StrucDocTr();
+
+            StrucDocTd td1 = new StrucDocTd();
+            td1.getContent().add("BI-RADS");
+            dataRow.getThOrTd().add(td1);
+
+            StrucDocTd td2 = new StrucDocTd();
+            td2.setID("birads");
+            td2.getContent().add(String.valueOf(doseValue));
+            dataRow.getThOrTd().add(td2);
+
+            tbody.getTr().add(dataRow);
+        }
+
+        table.getTbody().add(tbody);
+
+        // Tabelle als JAXBElement wrappen und hinzufügen
+        JAXBElement<StrucDocTable> tableElement = objectFactory.createStrucDocTextTable(table);
+        structext.getContent().add(tableElement);
+
+        section.setText(structext);
+
+        ST stTitle = new ST();
+        stTitle.setXmlMixed(titleText);
+        section.setTitle(stTitle);
+        comp3.setSection(section);
+        return comp3;
+    }
+
 	protected Beilagen getAppendixSection(List<Appendix> appendices, String contentPrefix) {
 		Beilagen appendix = new Beilagen();
 
