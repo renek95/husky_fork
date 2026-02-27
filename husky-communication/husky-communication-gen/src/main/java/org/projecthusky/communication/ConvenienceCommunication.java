@@ -18,6 +18,7 @@ import org.openehealth.ipf.commons.ihe.xds.core.metadata.*;
 import org.openehealth.ipf.commons.ihe.xds.core.metadata.Timestamp.Precision;
 import org.openehealth.ipf.commons.ihe.xds.core.requests.ProvideAndRegisterDocumentSet;
 import org.openehealth.ipf.commons.ihe.xds.core.requests.QueryRegistry;
+import org.openehealth.ipf.commons.ihe.xds.core.requests.RegisterDocumentSet;
 import org.openehealth.ipf.commons.ihe.xds.core.requests.RetrieveDocumentSet;
 import org.openehealth.ipf.commons.ihe.xds.core.requests.query.QueryReturnType;
 import org.openehealth.ipf.commons.ihe.xds.core.responses.QueryResponse;
@@ -940,7 +941,15 @@ public class ConvenienceCommunication extends CamelService {
 	 * @throws Exception if the transfer is not successful
 	 */
 	public Response submit(SecurityHeaderElement security, String messageId) throws Exception {
-		return submit(security, null, messageId);
+		return submit(security, null, messageId, null);
+	}
+
+    public Response submitWithStringAssertion(String xmlAssertion) throws Exception {
+        return submit(null, null, null, xmlAssertion);
+    }
+
+	public Response submitWithStringAssertion(String xmlAssertion, Association association) throws Exception {
+		return submit(null, association, null, xmlAssertion);
 	}
 
 	/**
@@ -992,7 +1001,7 @@ public class ConvenienceCommunication extends CamelService {
 	 * @throws Exception if the transfer is not successful
 	 */
 	public Response submitReplacement(SubmissionSetMetadata submissionSetMetadata, String idOfOriginDocument,
-			SecurityHeaderElement security, String messageId) throws Exception {
+			SecurityHeaderElement security, String messageId, String xmlAssertion) throws Exception {
 		ProvideAndRegisterDocumentSet txnData = getTxnData();
 		if (txnData.getSubmissionSet() == null) {
 			txnData.setSubmissionSet(new SubmissionSet());
@@ -1007,7 +1016,7 @@ public class ConvenienceCommunication extends CamelService {
 		txnData.getAssociations().add(association);
 
 		submissionSetMetadata.toOhtSubmissionSetType(txnData.getSubmissionSet());
-		return submit(security, association, messageId);
+		return submit(security, association, messageId, xmlAssertion);
 	}
 
 	/**
@@ -1019,8 +1028,7 @@ public class ConvenienceCommunication extends CamelService {
 	 * @return the IPF Response
 	 * @throws Exception if the transfer is not successful
 	 */
-	private Response submit(SecurityHeaderElement security, Association association, String messageId)
-			throws Exception {
+	private Response submit(SecurityHeaderElement security, Association association, String messageId, String xmlAssertion) throws Exception {
 		log.debug("submit document");
 		AffinityDomain affinityDomain = getAffinityDomain();
 		ProvideAndRegisterDocumentSet txnData = getTxnData();
@@ -1048,9 +1056,26 @@ public class ConvenienceCommunication extends CamelService {
 				affinityDomain.getRepositoryDestination().getUri(), atnaConfigMode.equals(AtnaConfigMode.SECURE));
 		log.debug(LOG_SEND_REQUEST, endpoint);
 
-		final var exchange = send(endpoint, txnData, security, messageId, null);
+		final var exchange = send(endpoint, txnData, security, messageId, null, xmlAssertion);
 
 		return exchange.getMessage().getBody(Response.class);
 	}
 
+    public Response setDeprecated(RegisterDocumentSet registerDocumentSet, Identifiable patientId, String messageId, String xmlAssertion) throws Exception {
+        log.debug("set document deprecated");
+        AffinityDomain affinityDomain = getAffinityDomain();
+        setDefaultKeystoreTruststore(affinityDomain.getRepositoryDestination());
+
+        SubmissionSet submissionSet = registerDocumentSet.getSubmissionSet();
+        setGeneralSubSetDetails(submissionSet, patientId);
+
+        log.debug("prepare submit of metadata");
+        final String endpoint = HuskyUtils.createEndpoint(XDS.Interactions.ITI_57.getWsTransactionConfiguration().getName(),
+                affinityDomain.getRegistryDestination().getUri(), atnaConfigMode.equals(AtnaConfigMode.SECURE));
+        log.debug(LOG_SEND_REQUEST, endpoint);
+
+        final var exchange = send(endpoint, registerDocumentSet, null, messageId, null, xmlAssertion);
+
+        return exchange.getMessage().getBody(Response.class);
+    }
 }

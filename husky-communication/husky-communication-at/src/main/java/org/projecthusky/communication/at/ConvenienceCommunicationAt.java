@@ -85,7 +85,7 @@ public class ConvenienceCommunicationAt extends ConvenienceCommunication {
 	 *                                            mode
 	 * @param submissionSetMetadataExtractionMode the submission set metadata
 	 *                                            extraction mode
-	 * 
+	 *
 	 */
 	public ConvenienceCommunicationAt(AffinityDomain affinityDomain, AtnaConfigMode atnaConfigMode,
 			org.projecthusky.common.communication.DocumentMetadata.DocumentMetadataExtractionMode documentMetadataExtractionMode,

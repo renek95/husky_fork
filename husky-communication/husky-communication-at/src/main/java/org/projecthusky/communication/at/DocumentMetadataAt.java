@@ -81,7 +81,7 @@ public class DocumentMetadataAt extends org.projecthusky.common.communication.Do
 				getDocumentEntry().getAuthors().add(author);
 			}
 		}
-		
+
 		getDocumentEntry().setLegalAuthenticator(extractor.extractLegalAuthenticator());
 
         CE classCode = ClassCode.DIAGNOSTIC_IMAGE_STUDY.getCE();
@@ -107,10 +107,10 @@ public class DocumentMetadataAt extends org.projecthusky.common.communication.Do
 		if (creationTime != null) {
 			setCreationTime(creationTime.getDateTime());
 		}
-		
+
 		getDocumentEntry().setFormatCode(extractor.extractFormatCode());
 		getDocumentEntry().setHealthcareFacilityTypeCode(extractor.extractHealthCareFacilityTypeCode());
-		
+
 		setMetadataLanguage(extractor.extractLanguageCode());
 		setMimeType(extractor.extractMimeType());
 
@@ -173,7 +173,7 @@ public class DocumentMetadataAt extends org.projecthusky.common.communication.Do
 	public void addAuthor(AuthorAt author, boolean orgUrnOidNeeded) {
 		log.debug("organization id: {}", author.getOrganization().getIdentificatorList());
 		super.addAuthor(author);
-		
+
 		if(orgUrnOidNeeded) {
 			for(Author authorDocEntry: getDocumentEntry().getAuthors()) {
 				if(authorDocEntry != null && authorDocEntry.getAuthorInstitution() != null) {
@@ -184,7 +184,7 @@ public class DocumentMetadataAt extends org.projecthusky.common.communication.Do
 									String.format("urn:oid:%s", orgDocEntry.getAssigningAuthority().getUniversalId()));
 						}
 					}
-				}	
+				}
 			}
 		}
 	}
@@ -391,9 +391,9 @@ public class DocumentMetadataAt extends org.projecthusky.common.communication.Do
 	}
 
 	public void setRefrencedIdList(Identificator id, String homeCommunityId) {
-		ReferenceId referenceId = Hl7v2Based.parse(
+        ExtendedReferenceId referenceId = Hl7v2Based.parse(
 				XdsMetadataUtilAt.createCxi(id, "urn:elga:iti:xds:2014:ownDocument_setId", homeCommunityId),
-				ReferenceId.class);
+                ExtendedReferenceId.class);
 
 		getDocumentEntry().getReferenceIdList().add(referenceId);
 
