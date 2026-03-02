@@ -84,6 +84,8 @@ public class DocumentMetadataAt extends org.projecthusky.common.communication.Do
 
 		getDocumentEntry().setLegalAuthenticator(extractor.extractLegalAuthenticator());
 
+        Code realCode = extractor.extractClassCode();
+        log.info("realCode: {} {}", realCode.getCode(), realCode.getSchemeName());
         CE classCode = ClassCode.DIAGNOSTIC_IMAGE_STUDY.getCE();
         LocalizedString localizedString = new LocalizedString(classCode.getDisplayName());
 		setTypeCode(new Code(classCode.getCode(), localizedString, classCode.getCodeSystem()), extractor.extractTypeCode(), extractor.extractTypeCodeOfTranslation(),

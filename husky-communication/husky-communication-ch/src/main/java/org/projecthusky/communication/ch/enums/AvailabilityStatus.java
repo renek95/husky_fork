@@ -39,7 +39,7 @@ public enum AvailabilityStatus implements ValueSetEnumInterface {
 			"Approved", "Approved", "genehmigt", "approuvé", "approvato"),
 	/**
 	 * <!-- @formatter:off -->
-	 * <div class="en">Deprecated</div>w
+	 * <div class="en">Deprecated</div>
 	 * <div class="de">veraltet</div>
 	 * <div class="fr">caduc</div>
 	 * <div class="it">obsoleto</div>

@@ -806,6 +806,11 @@ public class ConvenienceCommunication extends CamelService {
         return queryDocumentQuery(queryParameter, securityHeader, QueryReturnType.LEAF_CLASS, messageId, xmlAssertion);
     }
 
+    protected QueryResponse queryDocumentQuery(AbstractStoredQuery query, SecurityHeaderElement securityHeader,
+                                               QueryReturnType returnType, String messageId) throws Exception {
+        return queryDocumentQuery(query, securityHeader, returnType, messageId, null);
+    }
+
     /**
      * Queries the registry of the affinity domain for all documents satisfying the
      * given query parameters.

@@ -178,7 +178,7 @@ public abstract class CamelService implements CamelContextAware {
             log.debug("build wss header from string");
             addWssHeader(xmlAssertion, exchange);
         }
-//
+
 		if (outgoingHttpHeaders != null && !outgoingHttpHeaders.isEmpty()) {
 			log.debug("add outgoing http headers");
 			addHttpHeader(exchange, outgoingHttpHeaders);
