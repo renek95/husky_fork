@@ -1080,8 +1080,10 @@ public class ConvenienceCommunication extends CamelService {
         SubmissionSet submissionSet;
         if (documentSet.getSubmissionSet() == null) {
             submissionSet = new SubmissionSet();
+            setGeneralSubSetDetails(submissionSet, documentSet.getDocuments().getFirst().getDocumentEntry().getSourcePatientId());
         } else {
             submissionSet = documentSet.getSubmissionSet();
+            submissionSet.setPatientId(documentSet.getDocuments().getFirst().getDocumentEntry().getSourcePatientId());
         }
         submissionSet.setSourceId(documentSet.getSubmissionSet().getSourceId());
         submissionSet.setAuthor(documentSet.getDocuments().getFirst().getDocumentEntry().getAuthors().getFirst());
@@ -1091,7 +1093,7 @@ public class ConvenienceCommunication extends CamelService {
         Association statusUpdate = new Association();
         statusUpdate.assignEntryUuid();
         statusUpdate.setAssociationType(AssociationType.UPDATE_AVAILABILITY_STATUS);
-        statusUpdate.setSourceUuid(submissionSet.getUniqueId());
+        statusUpdate.setSourceUuid(submissionSet.getEntryUuid());
         statusUpdate.setTargetUuid(FhirCommon.addUrnUuid(idOfOriginDocument));
         statusUpdate.setOriginalStatus(AvailabilityStatus.APPROVED);
         statusUpdate.setNewStatus(AvailabilityStatus.DEPRECATED);
