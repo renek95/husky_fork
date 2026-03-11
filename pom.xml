@@ -68,27 +68,47 @@
 		<module>husky-common</module>
 		<module>husky-cda</module>
 	</modules>
-	<repositories>
-		<repository>
-			<id>mvnrepository.com</id>
-			<name>MVN Repository</name>
-			<url>https://mvnrepository.com/artifact/</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>Shibboleth repo</id>
-			<url>
-				https://build.shibboleth.net/nexus/content/repositories/releases</url>
-		</repository>
-	</repositories>
+    <repositories>
+        <repository>
+            <id>redsoft-nexus-releases</id>
+            <name>Release</name>
+            <url>https://nexus.redsoft.co/repository/maven-releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases></repository>
+        <repository>
+            <id>redsoft-nexus-snapshots</id>
+            <name>Snapshot</name>
+            <url>https://nexus.redsoft.co/repository/maven-snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>mvnrepository.com</id>
+            <name>MVN Repository</name>
+            <url>https://mvnrepository.com/artifact/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>Shibboleth repo</id>
+            <url>
+                https://build.shibboleth.net/nexus/content/repositories/releases</url>
+        </repository>
+    </repositories>
 	<distributionManagement>
-		<snapshotRepository>
-			<id>husky-snapshots</id>
-			<name>husky-snapshots</name>
-			<url>https://archiva.et-innovations.org/repository/snapshots/</url>
-		</snapshotRepository>
+        <repository>
+            <id>redsoft-nexus</id>
+            <name>Releases</name>
+            <url>https://nexus.redsoft.co/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>redsoft-nexus</id>
+            <name>Snapshot</name>
+            <url>https://nexus.redsoft.co/repository/maven-snapshots/</url>
+        </snapshotRepository>
 	</distributionManagement>
 	<dependencyManagement>
 		<dependencies>
