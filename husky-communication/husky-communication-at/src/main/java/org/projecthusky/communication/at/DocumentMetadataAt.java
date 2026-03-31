@@ -14,6 +14,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openehealth.ipf.commons.ihe.xds.core.metadata.*;
 import org.projecthusky.common.at.AuthorAt;
 import org.projecthusky.common.at.enums.ClassCode;
 import org.projecthusky.common.at.enums.ConfidentialityCode;
@@ -29,16 +30,6 @@ import org.projecthusky.common.hl7cdar2.POCDMT000040ClinicalDocument;
 import org.projecthusky.common.model.Identificator;
 import org.projecthusky.common.utils.XdsMetadataUtil;
 import org.projecthusky.common.utils.time.DateTimes;
-import org.openehealth.ipf.commons.ihe.xds.core.metadata.AssociationType;
-import org.openehealth.ipf.commons.ihe.xds.core.metadata.Author;
-import org.openehealth.ipf.commons.ihe.xds.core.metadata.Code;
-import org.openehealth.ipf.commons.ihe.xds.core.metadata.DocumentEntry;
-import org.openehealth.ipf.commons.ihe.xds.core.metadata.Hl7v2Based;
-import org.openehealth.ipf.commons.ihe.xds.core.metadata.Identifiable;
-import org.openehealth.ipf.commons.ihe.xds.core.metadata.LocalizedString;
-import org.openehealth.ipf.commons.ihe.xds.core.metadata.Organization;
-import org.openehealth.ipf.commons.ihe.xds.core.metadata.ReferenceId;
-import org.openehealth.ipf.commons.ihe.xds.core.metadata.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +73,9 @@ public class DocumentMetadataAt extends org.projecthusky.common.communication.Do
 			}
 		}
 
-		getDocumentEntry().setLegalAuthenticator(extractor.extractLegalAuthenticator());
+        Person legalAuthenticator = extractor.extractLegalAuthenticator();
+		getDocumentEntry().setLegalAuthenticator(legalAuthenticator);
+        setLegalAuthenticator(new org.projecthusky.common.model.Person(legalAuthenticator));
 
         Code realCode = extractor.extractClassCode();
         log.info("realCode: {} {}", realCode.getCode(), realCode.getSchemeName());

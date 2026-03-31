@@ -492,7 +492,7 @@ public class CDAR2Extractor {
 			}
 
 			// XCN.2 through XCN.6
-			extractPerson(auth, idNull);
+			return extractPerson(auth, idNull);
 		}
 
 		return null;

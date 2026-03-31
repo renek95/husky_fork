@@ -532,6 +532,8 @@ public class Radiology extends BaseDocument {
 
         addHeader(cda);
 
+        cda.setEffectiveTime(DateTimes.toDatetimeTs(creationTime, creationTime.getZone()));
+
         if (code == null) {
             code = TypeCode.DIAGNOSTIC_IMAGING_STUDY;
         }
@@ -589,7 +591,6 @@ public class Radiology extends BaseDocument {
 
     private void addHeader(EpimsDocumentRadiology cda) {
         cda.setHl7Id(getDocId().getHl7CdaR2Ii());
-        cda.setEffectiveTime(DateTimes.toDatetimeTs(ZonedDateTime.now(), ZoneId.systemDefault()));
 
         cda.setSetId(getSetId().getHl7CdaR2Ii());
         cda.setHl7VersionNumber(new INT(this.version));
