@@ -665,7 +665,8 @@ public class Radiology extends BaseDocument {
         if (StringUtils.isNotEmpty(this.investigation)) {
             String effectiveTime = DateTimes.toDatetimeTs(this.startImaging, ZoneId.systemDefault()).getValue();
 
-            this.investigation = "Technik: Siemens Magnetom; Untersuchungsparameter: axial gewichtete T1, T2-gewichtete TSE- und ultraschnelle GRE-Sequenzen vor und nach iv. Applikation von Clariscan, Substraktion, dynamische Kontrastmittelauswertung; axiale EPI-gewichtete Diffusionssequenz";
+            //MAMO
+//            this.investigation = "Technik: Siemens Magnetom; Untersuchungsparameter: axial gewichtete T1, T2-gewichtete TSE- und ultraschnelle GRE-Sequenzen vor und nach iv. Applikation von Clariscan, Substraktion, dynamische Kontrastmittelauswertung; axiale EPI-gewichtete Diffusionssequenz";
 
             if (this.doseInMsv != null) {
                 structuredBody.getComponent().add(createComp3WithDoseTable(new Investigation(this.doseInMsv, effectiveTime), investigation, "Aktuelle Untersuchung", this.doseInMsv));
