@@ -40,6 +40,7 @@ public class Radiology extends BaseDocument {
     private PatientCdaAt patient;
     private List<PractitionerCdaAt> authors;
     private ZonedDateTime authorTime;
+    private ZonedDateTime legalAuthenticatorTime;
     private OrganizationAt custodian;
     private InformationRecipient informationRecipient;
     private PractitionerCdaAt legalAuthenticator;
@@ -162,6 +163,14 @@ public class Radiology extends BaseDocument {
 
     public void setAuthorTime(ZonedDateTime authorTime) {
         this.authorTime = authorTime;
+    }
+
+    public ZonedDateTime getLegalAuthenticatorTime() {
+        return legalAuthenticatorTime;
+    }
+
+    public void setLegalAuthenticatorTime(ZonedDateTime legalAuthenticatorTime) {
+        this.legalAuthenticatorTime = legalAuthenticatorTime;
     }
 
     public OrganizationAt getCustodian() {
@@ -559,8 +568,8 @@ public class Radiology extends BaseDocument {
             cda.setHl7InformationRecipient(informationRecipient.getPOCDMT000040InformationRecipient());
         }
 
-        if (legalAuthenticator != null && this.getAuthorTime() != null) {
-            cda.setLegalAuthenticator(legalAuthenticator.getHeaderLegalAuthenticator(this.getAuthorTime()));
+        if (legalAuthenticator != null && this.getLegalAuthenticatorTime() != null) {
+            cda.setLegalAuthenticator(legalAuthenticator.getHeaderLegalAuthenticator(this.getLegalAuthenticatorTime()));
         }
 
         if (participants != null && !participants.isEmpty()) {

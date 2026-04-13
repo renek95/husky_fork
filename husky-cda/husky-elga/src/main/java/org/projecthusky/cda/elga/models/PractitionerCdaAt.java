@@ -50,7 +50,7 @@ public class PractitionerCdaAt extends PractitionerAt {
 		if (timeAuthor == null) {
 			time.getNullFlavor().add(NullFlavor.UNKNOWN_L1_CODE);
 		} else {
-			time.setValue(DateTimes.toDatetimeTs(timeAuthor).getValue());
+			time.setValue(DateTimes.toDatetimeTs(timeAuthor, timeAuthor.getZone()).getValue());
 		}
 
 		author.setTime(time);
@@ -71,7 +71,7 @@ public class PractitionerCdaAt extends PractitionerAt {
 		if (timeLegalAuthen == null) {
 			time.getNullFlavor().add(NullFlavor.UNKNOWN_L1_CODE);
 		} else {
-			time.setValue(DateTimes.toDatetimeTs(timeLegalAuthen).getValue());
+			time.setValue(DateTimes.toDatetimeTs(timeLegalAuthen, timeLegalAuthen.getZone()).getValue());
 		}
 
 		legalAuthenticator.setHl7Time(time);
@@ -84,7 +84,7 @@ public class PractitionerCdaAt extends PractitionerAt {
 
 		TS time = new TS();
 		if (timeAuthor != null) {
-			time.setValue(DateTimes.toDatetimeTs(timeAuthor).getValue());
+			time.setValue(DateTimes.toDatetimeTs(timeAuthor, timeAuthor.getZone()).getValue());
 		} else {
 			time.nullFlavor = new ArrayList<>();
 			time.getNullFlavor().add(NullFlavor.UNKNOWN_L1_CODE);
@@ -97,7 +97,7 @@ public class PractitionerCdaAt extends PractitionerAt {
 
 	public AtcdabbrHeaderDataEnterer getHeaderDataEnterer(ZonedDateTime timeDataEnterer) {
 		AtcdabbrHeaderDataEnterer dataEnterer = new AtcdabbrHeaderDataEnterer();
-		dataEnterer.setTime(DateTimes.toDatetimeTs(timeDataEnterer));
+		dataEnterer.setTime(DateTimes.toDatetimeTs(timeDataEnterer, timeDataEnterer.getZone()));
 		POCDMT000040AssignedEntity assignedEntity = new POCDMT000040AssignedEntity();
 
 		if (getIdentifier() != null && !getIdentifier().isEmpty()) {
@@ -125,7 +125,7 @@ public class PractitionerCdaAt extends PractitionerAt {
 
 	public AuthorBodyPs getAuthorBodyPs(ZonedDateTime authTime) {
 		AuthorBodyPs author = new AuthorBodyPs();
-		author.setTime(DateTimes.toDatetimeTs(authTime));
+		author.setTime(DateTimes.toDatetimeTs(authTime, authTime.getZone()));
 		author.setAssignedAuthor(getHl7CdaR2Pocdmt000040AssignedAuthor(author.getAssignedAuthor()));
 		return author;
 	}

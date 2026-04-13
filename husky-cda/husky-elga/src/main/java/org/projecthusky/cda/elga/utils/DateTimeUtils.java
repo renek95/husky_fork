@@ -25,7 +25,7 @@ public class DateTimeUtils {
 		IVLTS ivlts = new IVLTS();
 		ivlts.getRest()
 				.add(new JAXBElement<>(new QName(NamespaceUtils.HL7_NAMESPACE, "low", XMLConstants.DEFAULT_NS_PREFIX),
-				TS.class, DateTimes.toDatetimeTs(startDate)));
+				TS.class, DateTimes.toDatetimeTs(startDate, startDate.getZone())));
 
 		if (stopDate == null) {
 			TS ts = new TS(NullFlavor.UNKNOWN_L1);
@@ -37,7 +37,7 @@ public class DateTimeUtils {
 			ivlts.getRest()
 					.add(new JAXBElement<>(
 							new QName(NamespaceUtils.HL7_NAMESPACE, "high", XMLConstants.DEFAULT_NS_PREFIX),
-					TS.class, DateTimes.toDatetimeTs(stopDate)));
+					TS.class, DateTimes.toDatetimeTs(stopDate, stopDate.getZone())));
 		}
 
 		return ivlts;
