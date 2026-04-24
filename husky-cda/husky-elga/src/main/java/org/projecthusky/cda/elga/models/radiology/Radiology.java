@@ -4,7 +4,7 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import org.apache.commons.lang3.StringUtils;
-import org.projecthusky.cda.elga.generated.artdecor.base.HeaderParticipantAnsprechpartner;
+import org.projecthusky.cda.elga.generated.artdecor.base.*;
 import org.projecthusky.cda.elga.generated.artdecor.ems.EpimsEntryHospitalization;
 import org.projecthusky.cda.elga.generated.artdecor.ems.EpimsHeaderRecordTarget;
 import org.projecthusky.cda.elga.generated.artdecor.ems.EpimsPatient;
@@ -13,6 +13,8 @@ import org.projecthusky.cda.elga.models.BaseDocument;
 import org.projecthusky.cda.elga.models.PatientCdaAt;
 import org.projecthusky.cda.elga.models.PractitionerCdaAt;
 import org.projecthusky.cda.elga.models.ems.*;
+import org.projecthusky.cda.elga.models.lab.LaboratoryReportData;
+import org.projecthusky.cda.elga.narrative.AnnotationTextBuilder;
 import org.projecthusky.cda.elga.utils.DateTimeUtils;
 import org.projecthusky.common.at.OrganizationAt;
 import org.projecthusky.common.at.enums.ClassCode;
@@ -26,6 +28,7 @@ import java.io.StringWriter;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Radiology extends BaseDocument {
@@ -62,9 +65,12 @@ public class Radiology extends BaseDocument {
     private String conclusions;
     private String recommendation;
     private String addendum;
+    private String logo;
+    private String logoMediaType;
 
     private Float doseInMsv;
     private Float biradsVal;
+    private Float acrVal;
 
     private ZonedDateTime startImaging;
     private ZonedDateTime stopImaging;
@@ -453,6 +459,22 @@ public class Radiology extends BaseDocument {
         this.addendum = addendum;
     }
 
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
+
+    public String getLogoMediaType() {
+        return logoMediaType;
+    }
+
+    public void setLogoMediaType(String logoMediaType) {
+        this.logoMediaType = logoMediaType;
+    }
+
     public Float getDoseInMsv() {
         return doseInMsv;
     }
@@ -469,13 +491,20 @@ public class Radiology extends BaseDocument {
         this.biradsVal = biradsVal;
     }
 
+    public Float getAcrVal() {
+        return acrVal;
+    }
+
+    public void setAcrVal(Float acrVal) {
+        this.acrVal = acrVal;
+    }
+
     protected POCDMT000040DocumentationOf getAtcdabbrHeaderDocumentationOfServiceEvent(
             ZonedDateTime start,
             ZonedDateTime stop,
             String codeValue,
             String displayName
     ) {
-        //TODO ersetzen durch Logik für die Untersuchung
         POCDMT000040DocumentationOf documentationOfServiceEvent = new POCDMT000040DocumentationOf();
         POCDMT000040ServiceEvent serviceEvent = new POCDMT000040ServiceEvent();
 
@@ -674,9 +703,6 @@ public class Radiology extends BaseDocument {
         if (StringUtils.isNotEmpty(this.investigation)) {
             String effectiveTime = DateTimes.toDatetimeTs(this.startImaging, ZoneId.systemDefault()).getValue();
 
-            //MAMO
-//            this.investigation = "Technik: Siemens Magnetom; Untersuchungsparameter: axial gewichtete T1, T2-gewichtete TSE- und ultraschnelle GRE-Sequenzen vor und nach iv. Applikation von Clariscan, Substraktion, dynamische Kontrastmittelauswertung; axiale EPI-gewichtete Diffusionssequenz";
-
             if (this.doseInMsv != null) {
                 structuredBody.getComponent().add(createComp3WithDoseTable(new Investigation(this.doseInMsv, effectiveTime), investigation, "Aktuelle Untersuchung", this.doseInMsv));
             } else {
@@ -698,8 +724,6 @@ public class Radiology extends BaseDocument {
 
         if (StringUtils.isNotEmpty(this.findings)) {
             if (this.biradsVal != null) {
-//                this.findings = "Dichter fibrozystisch transformierter Drüsenkörper bilateral, keine Läsionen mit malignitätstypischer Kontrastmittelkinetik und keine soliden expansiven Läsionen nachweisbar. Die Thoraxwand unauffällig, in den mitdargestellten Anteil der Axillen keine pathologisch vergrößerten Lymphknoten nachweisbar.";
-
                 Findings findingObj = new Findings();
                 findingObj.addClassificationTable();
                 findingObj.addClassificationRow("BI-RADS", "birads", this.biradsVal.toString());
@@ -707,7 +731,7 @@ public class Radiology extends BaseDocument {
                 String effectiveTime = DateTimes.toDatetimeTs(this.startImaging, ZoneId.systemDefault()).getValue();
                 findingObj.addFindingEntry("finding-1");
                 findingObj.addBiradsEntry("II.AC.b.1", effectiveTime);
-                structuredBody.getComponent().add(createComp3WithMammo(findingObj, findings, "Befund", this.biradsVal));
+                structuredBody.getComponent().add(createComp3WithMammo(findingObj, findings, "Befund", this.biradsVal, this.acrVal));
             } else {
                 structuredBody.getComponent().add(createComp3FreeText(new Findings(), findings, "Befund"));
             }
@@ -733,11 +757,42 @@ public class Radiology extends BaseDocument {
             structuredBody.getComponent().add(createComp3FreeText(new Addendum(), addendum, "Addendum"));
         }
 
-        //TODO Brieftext Allgemeiner Leitfaden
-        //TODO Abschließende Bemerkungen Allgemeiner Leitfaden
-        //TODO Schlüsselbilder -> Nachfragen
+        if (StringUtils.isNotEmpty(this.logo)) {
+            POCDMT000040Component3 comp3 = new POCDMT000040Component3();
+            comp3.setSection(createLogoSection());
+            structuredBody.getComponent().add(comp3);
+        }
 
         return structuredBody;
+    }
+
+    protected POCDMT000040Section createLogoSection() {
+        POCDMT000040Section section = new POCDMT000040Section();
+
+        ST stTitle = new ST();
+        stTitle.setXmlMixed("Logo");
+        section.setTitle(stTitle);
+
+        // LogoEntry erstellen und Base64-Bilddaten setzen
+        LogoEntry logoEntry = new LogoEntry();
+        ED edValue = logoEntry.getHl7Value();
+        edValue.setMediaType(this.logoMediaType);
+        edValue.setXmlMixed(this.logo); // Base64-kodierter Bildinhalt
+
+        // Entry wrappen und zur Section hinzufügen
+        POCDMT000040Entry entry = new POCDMT000040Entry();
+        entry.setObservationMedia(logoEntry);
+        section.getEntry().add(entry);
+
+        // Narrativen Text setzen (für CDA-Konformität erforderlich)
+        StrucDocText text = new StrucDocText();
+        StrucDocRenderMultiMedia renderMultiMedia = new StrucDocRenderMultiMedia();
+        renderMultiMedia.getReferencedObject().add(logoEntry);
+        ObjectFactory objectFactory = new ObjectFactory();
+        text.getContent().add(objectFactory.createStrucDocTextRenderMultiMedia(renderMultiMedia));
+        section.setText(text);
+
+        return section;
     }
 
     private CE createHl7CodeFromTypeCode(TypeCode typeCode) {
