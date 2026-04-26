@@ -103,7 +103,7 @@ public class BaseDocument  {
         return comp3;
     }
 
-    protected POCDMT000040Component3 createComp3WithMammo(POCDMT000040Section section, String text, String titleText, Float doseValue) {
+    protected POCDMT000040Component3 createComp3WithMammo(POCDMT000040Section section, String text, String titleText, Float doseValue, Float acrValue) {
         POCDMT000040Component3 comp3 = new POCDMT000040Component3();
         StrucDocText structext = new StrucDocText();
         ObjectFactory objectFactory = new ObjectFactory();
@@ -131,7 +131,7 @@ public class BaseDocument  {
         headerRow.getThOrTd().add(th1);
 
         StrucDocTh th2 = new StrucDocTh();
-        th2.getContent().add("BI-RADS");
+        th2.getContent().add("Wert");
         headerRow.getThOrTd().add(th2);
 
         thead.getTr().add(headerRow);
@@ -151,6 +151,21 @@ public class BaseDocument  {
             StrucDocTd td2 = new StrucDocTd();
             td2.setID("birads");
             td2.getContent().add(String.valueOf(doseValue));
+            dataRow.getThOrTd().add(td2);
+
+            tbody.getTr().add(dataRow);
+        }
+
+        if (acrValue != null && acrValue > 0) {
+            StrucDocTr dataRow = new StrucDocTr();
+
+            StrucDocTd td1 = new StrucDocTd();
+            td1.getContent().add("ACR");
+            dataRow.getThOrTd().add(td1);
+
+            StrucDocTd td2 = new StrucDocTd();
+            td2.setID("acr");
+            td2.getContent().add(String.valueOf(acrValue));
             dataRow.getThOrTd().add(td2);
 
             tbody.getTr().add(dataRow);

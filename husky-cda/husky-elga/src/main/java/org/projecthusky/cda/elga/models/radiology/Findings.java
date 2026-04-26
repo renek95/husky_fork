@@ -180,14 +180,8 @@ public class Findings extends POCDMT000040Section {
 
         // Effective Time
         if (effectiveTime != null) {
-            TS ts = factory.createTS();
-            ts.setValue(effectiveTime);
             IVLTS ivlts = factory.createIVLTS();
-            ivlts.getRest().add(new JAXBElement<>(
-                    new QName("urn:hl7-org:v3", "value"),
-                    TS.class,
-                    ts
-            ));
+            ivlts.setValue(effectiveTime);
             observation.setEffectiveTime(ivlts);
         }
 
