@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.projecthusky</groupId>
 	<artifactId>husky-api</artifactId>
-	<version>3.2.4</version>
+	<version>3.2.6</version>
 	<url>https://github.com/project-husky/husky</url>
 	<name>Husky</name>
 	<packaging>pom</packaging>

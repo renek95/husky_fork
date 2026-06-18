@@ -18,8 +18,8 @@ import org.projecthusky.common.hl7cdar2.POCDMT000040Section;
  * Brieftext
  * <p>
  * <p>
- * Identifier: 1.2.40.0.34.11.1.2.1<br>
- * Effective date: 2011-12-19 00:00:00<br>
+ * Identifier: 1.2.40.0.34.6.0.11.2.69<br>
+ * Effective date: 2021‑02‑19 11:44:10<br>
  * Status: active
  */
 @Generated(value = "org.projecthusky.codegenerator.cda.ArtDecor2JavaGenerator", date = "2022-02-21")
@@ -27,10 +27,10 @@ public class Brieftext extends POCDMT000040Section {
 
     public Brieftext() {
         super.getClassCode().add("DOCSECT");
-        super.getTemplateId().add(createHl7TemplateIdFixedValue("1.2.40.0.34.11.1.2.1"));
+        super.getTemplateId().add(createHl7TemplateIdFixedValue("1.2.40.0.34.6.0.11.2.69"));
         super.setCode(createHl7CodeFixedValue("BRIEFT",
                                               "1.2.40.0.34.5.40",
-                                              null,
+                                              "ELGA_Sections",
                                               "Brieftext"));
     }
 

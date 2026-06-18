@@ -1,211 +1,189 @@
 /*
-* This code is made available under the terms of the Eclipse Public License v1.0
-* in the github project https://github.com/project-husky/husky there you also
-* find a list of the contributors and the license information.
-*
-* This project has been developed further and modified by the joined working group Husky
-* on the basis of the eHealth Connector opensource project from June 28, 2021,
-* whereas medshare GmbH is the initial and main contributor/author of the eHealth Connector.
-*/
+ * This code is made available under the terms of the Eclipse Public License v1.0
+ * in the github project https://github.com/project-husky/husky there you also
+ * find a list of the contributors and the license information.
+ *
+ * This project has been developed further and modified by the joined working group Husky
+ * on the basis of the eHealth Connector opensource project from June 28, 2021,
+ * whereas medshare GmbH is the initial and main contributor/author of the eHealth Connector.
+ */
 package org.projecthusky.cda.elga.models;
-
-import java.util.List;
 
 import jakarta.xml.bind.JAXBElement;
 import org.projecthusky.cda.elga.generated.artdecor.base.Beilagen;
 import org.projecthusky.cda.elga.narrative.AppendixNarrativeTextGenerator;
+import org.projecthusky.cda.elga.utils.CdaTextInjector;
+import org.projecthusky.cda.elga.utils.HtmlToCdaConverter;
 import org.projecthusky.common.hl7cdar2.*;
 
-public class BaseDocument  {
+import java.util.List;
 
-	protected POCDMT000040Component3 createComp3FreeText(POCDMT000040Section section, String text, String titleText) {
-		POCDMT000040Component3 comp3 = new POCDMT000040Component3();
-		StrucDocText structext = new StrucDocText();
-		structext.setMediaType("text/plain");
-		structext.getContent().add(text);
-		section.setText(structext);
+public class BaseDocument {
 
-		ST stTitle = new ST();
-		stTitle.setXmlMixed(titleText);
-		section.setTitle(stTitle);
-		comp3.setSection(section);
-		return comp3;
-	}
+    private static final String DEFAULT_PATIENT_DOSE_TEXT = "Informationen zur Patientendosis";
+    private static final String DEFAULT_PATIENT_DOSE_PARAGRAPH = "<paragraph>" + DEFAULT_PATIENT_DOSE_TEXT + "</paragraph>";
+    private static final String TEXT_PLAIN_MEDIA_TYPE = "text/plain";
+    private static final String EFFECTIVE_DOSE_LABEL = "Effektive Dosis";
+    private static final String EFFECTIVE_DOSE_UNIT = "mSv";
+    private static final String OBSERVATION_ROW_ID = "OBS-1";
+    private static final String BIRADS_LABEL = "BI-RADS";
+    private static final String BIRADS_CELL_ID = "birads";
+    private static final String ACR_LABEL = "ACR";
+    private static final String ACR_CELL_ID = "acr";
+
+    protected POCDMT000040Component3 createComp3FreeText(POCDMT000040Section section, String text, String titleText) {
+        StrucDocText cdaText = createFreeText(text);
+        return createComponentWithSection(section, cdaText, titleText);
+    }
 
     protected POCDMT000040Component3 createComp3WithDoseTable(POCDMT000040Section section, String text, String titleText, Float doseValue) {
-        POCDMT000040Component3 comp3 = new POCDMT000040Component3();
-        StrucDocText structext = new StrucDocText();
         ObjectFactory objectFactory = new ObjectFactory();
+        StrucDocText cdaText = createCdaTextWithFallbackParagraph(text, objectFactory);
+        StrucDocTable doseTable = createTable("Parameter", "Ergebnis", "Einheit");
 
-        // Paragraph mit Text erstellen
-        StrucDocParagraph paragraph = new StrucDocParagraph();
-        paragraph.getContent().add(text != null ? text : "Informationen zur Patientendosis");
-        JAXBElement<StrucDocParagraph> paragraphElement = objectFactory.createStrucDocTextParagraph(paragraph);
-        structext.getContent().add(paragraphElement);
-
-        // Tabelle erstellen
-        StrucDocTable table = new StrucDocTable();
-
-        // Thead erstellen
-        StrucDocThead thead = new StrucDocThead();
-        StrucDocTr headerRow = new StrucDocTr();
-
-        StrucDocTh th1 = new StrucDocTh();
-        th1.getContent().add("Parameter");
-        headerRow.getThOrTd().add(th1);
-
-        StrucDocTh th2 = new StrucDocTh();
-        th2.getContent().add("Ergebnis");
-        headerRow.getThOrTd().add(th2);
-
-        StrucDocTh th3 = new StrucDocTh();
-        th3.getContent().add("Einheit");
-        headerRow.getThOrTd().add(th3);
-
-        thead.getTr().add(headerRow);
-        table.setThead(thead);
-
-        // Tbody erstellen
-        StrucDocTbody tbody = new StrucDocTbody();
-
-        // Zeile für Effektive Dosis
-        if (doseValue != null && doseValue > 0) {
-            StrucDocTr dataRow = new StrucDocTr();
-            dataRow.setID("OBS-1");
-
-            StrucDocTd td1 = new StrucDocTd();
-            td1.getContent().add("Effektive Dosis");
-            dataRow.getThOrTd().add(td1);
-
-            StrucDocTd td2 = new StrucDocTd();
-            td2.getContent().add(String.valueOf(doseValue));
-            dataRow.getThOrTd().add(td2);
-
-            StrucDocTd td3 = new StrucDocTd();
-            td3.getContent().add("mSv");
-            dataRow.getThOrTd().add(td3);
-
-            tbody.getTr().add(dataRow);
+        if (isPositive(doseValue)) {
+            StrucDocTr doseRow = createRow(OBSERVATION_ROW_ID,
+                    createCell(EFFECTIVE_DOSE_LABEL),
+                    createCell(String.valueOf(doseValue)),
+                    createCell(EFFECTIVE_DOSE_UNIT));
+            doseTable.getTbody().getFirst().getTr().add(doseRow);
         }
 
-        table.getTbody().add(tbody);
-
-        // Tabelle als JAXBElement wrappen und hinzufügen
-        JAXBElement<StrucDocTable> tableElement = objectFactory.createStrucDocTextTable(table);
-        structext.getContent().add(tableElement);
-
-        section.setText(structext);
-
-        ST stTitle = new ST();
-        stTitle.setXmlMixed(titleText);
-        section.setTitle(stTitle);
-        comp3.setSection(section);
-        return comp3;
+        cdaText.getContent().add(objectFactory.createStrucDocTextTable(doseTable));
+        return createComponentWithSection(section, cdaText, titleText);
     }
 
     protected POCDMT000040Component3 createComp3WithMammo(POCDMT000040Section section, String text, String titleText, Float doseValue, Float acrValue) {
-        POCDMT000040Component3 comp3 = new POCDMT000040Component3();
-        StrucDocText structext = new StrucDocText();
         ObjectFactory objectFactory = new ObjectFactory();
+        StrucDocText cdaText = createCdaTextWithFallbackParagraph(text, objectFactory);
+        StrucDocTable classificationTable = createTable("Klassifikation", "Wert");
 
-        // Paragraph mit Text erstellen
-        StrucDocParagraph paragraph = new StrucDocParagraph();
-        StrucDocContent content = new StrucDocContent();
-        content.setID("finding-1");
-        content.getContent().add(text != null ? text : "Informationen zur Patientendosis");
-
-        JAXBElement<StrucDocContent> contentElement = objectFactory.createStrucDocTextContent(content);
-        paragraph.getContent().add(contentElement);
-        JAXBElement<StrucDocParagraph> paragraphElement = objectFactory.createStrucDocTextParagraph(paragraph);
-        structext.getContent().add(paragraphElement);
-
-        // Tabelle erstellen
-        StrucDocTable table = new StrucDocTable();
-
-        // Thead erstellen
-        StrucDocThead thead = new StrucDocThead();
-        StrucDocTr headerRow = new StrucDocTr();
-
-        StrucDocTh th1 = new StrucDocTh();
-        th1.getContent().add("Klassifikation");
-        headerRow.getThOrTd().add(th1);
-
-        StrucDocTh th2 = new StrucDocTh();
-        th2.getContent().add("Wert");
-        headerRow.getThOrTd().add(th2);
-
-        thead.getTr().add(headerRow);
-        table.setThead(thead);
-
-        // Tbody erstellen
-        StrucDocTbody tbody = new StrucDocTbody();
-
-        // Zeile für Effektive Dosis
-        if (doseValue != null && doseValue > 0) {
-            StrucDocTr dataRow = new StrucDocTr();
-
-            StrucDocTd td1 = new StrucDocTd();
-            td1.getContent().add("BI-RADS");
-            dataRow.getThOrTd().add(td1);
-
-            StrucDocTd td2 = new StrucDocTd();
-            td2.setID("birads");
-            td2.getContent().add(String.valueOf(doseValue));
-            dataRow.getThOrTd().add(td2);
-
-            tbody.getTr().add(dataRow);
+        if (isPositive(doseValue)) {
+            classificationTable.getTbody().getFirst().getTr().add(createRow(null,
+                    createCell(BIRADS_LABEL),
+                    createCell(BIRADS_CELL_ID, String.valueOf(doseValue))));
         }
 
-        if (acrValue != null && acrValue > 0) {
-            StrucDocTr dataRow = new StrucDocTr();
-
-            StrucDocTd td1 = new StrucDocTd();
-            td1.getContent().add("ACR");
-            dataRow.getThOrTd().add(td1);
-
-            StrucDocTd td2 = new StrucDocTd();
-            td2.setID("acr");
-            td2.getContent().add(String.valueOf(acrValue));
-            dataRow.getThOrTd().add(td2);
-
-            tbody.getTr().add(dataRow);
+        if (isPositive(acrValue)) {
+            classificationTable.getTbody().getFirst().getTr().add(createRow(null,
+                    createCell(ACR_LABEL),
+                    createCell(ACR_CELL_ID, String.valueOf(acrValue))));
         }
 
-        table.getTbody().add(tbody);
-
-        // Tabelle als JAXBElement wrappen und hinzufügen
-        JAXBElement<StrucDocTable> tableElement = objectFactory.createStrucDocTextTable(table);
-        structext.getContent().add(tableElement);
-
-        section.setText(structext);
-
-        ST stTitle = new ST();
-        stTitle.setXmlMixed(titleText);
-        section.setTitle(stTitle);
-        comp3.setSection(section);
-        return comp3;
+        cdaText.getContent().add(objectFactory.createStrucDocTextTable(classificationTable));
+        return createComponentWithSection(section, cdaText, titleText);
     }
 
-	protected Beilagen getAppendixSection(List<Appendix> appendices, String contentPrefix) {
-		Beilagen appendix = new Beilagen();
+    private POCDMT000040Component3 createComponentWithSection(POCDMT000040Section section, StrucDocText cdaText, String titleText) {
+        POCDMT000040Component3 component = new POCDMT000040Component3();
+        section.setText(cdaText);
+        section.setTitle(createTitle(titleText));
+        component.setSection(section);
+        return component;
+    }
 
-		ST stTitle = new ST();
-		stTitle.setXmlMixed("Beilagen");
-		appendix.setHl7Title(stTitle);
+    private StrucDocText createFreeText(String text) {
+        String cdaXmlString = HtmlToCdaConverter.convert(text);
+        try {
+            return CdaTextInjector.createCdaTextObject(cdaXmlString);
+        } catch (Exception e) {
+            StrucDocText fallbackText = new StrucDocText();
+            fallbackText.setMediaType(TEXT_PLAIN_MEDIA_TYPE);
+            fallbackText.getContent().add(text);
+            return fallbackText;
+        }
+    }
 
-		int index = 0;
-		for (Appendix appendixDoc : appendices) {
-			appendix.addHl7Entry(appendixDoc.getHl7CdaR2AppendixEntry(contentPrefix, index));
-			index++;
-		}
+    private StrucDocText createCdaTextWithFallbackParagraph(String text, ObjectFactory objectFactory) {
+        String paragraphXml = text != null ? HtmlToCdaConverter.convert(text) : DEFAULT_PATIENT_DOSE_PARAGRAPH;
+        try {
+            return CdaTextInjector.createCdaTextObject(paragraphXml);
+        } catch (Exception e) {
+            StrucDocText fallbackText = new StrucDocText();
+            StrucDocParagraph paragraph = new StrucDocParagraph();
+            paragraph.getContent().add(text != null ? text : DEFAULT_PATIENT_DOSE_TEXT);
+            JAXBElement<StrucDocParagraph> paragraphElement = objectFactory.createStrucDocTextParagraph(paragraph);
+            fallbackText.getContent().add(paragraphElement);
+            return fallbackText;
+        }
+    }
 
-		StrucDocText text = new StrucDocText();
-		AppendixNarrativeTextGenerator textbuilder = new AppendixNarrativeTextGenerator(appendix.getEntry(),
-				appendices);
-		text.getContent().add(textbuilder.toString());
-		appendix.setHl7Text(text);
+    private StrucDocTable createTable(String... columnHeaders) {
+        StrucDocTable table = new StrucDocTable();
+        table.setThead(createTableHeader(columnHeaders));
+        table.getTbody().add(new StrucDocTbody());
+        return table;
+    }
 
-		return appendix;
-	}
+    private StrucDocThead createTableHeader(String... columnHeaders) {
+        StrucDocThead tableHeader = new StrucDocThead();
+        StrucDocTr headerRow = new StrucDocTr();
+
+        for (String columnHeader : columnHeaders) {
+            StrucDocTh headerCell = new StrucDocTh();
+            headerCell.getContent().add(columnHeader);
+            headerRow.getThOrTd().add(headerCell);
+        }
+
+        tableHeader.getTr().add(headerRow);
+        return tableHeader;
+    }
+
+    private StrucDocTr createRow(String rowId, StrucDocTd... cells) {
+        StrucDocTr row = new StrucDocTr();
+        if (rowId != null) {
+            row.setID(rowId);
+        }
+
+        for (StrucDocTd cell : cells) {
+            row.getThOrTd().add(cell);
+        }
+
+        return row;
+    }
+
+    private StrucDocTd createCell(String value) {
+        StrucDocTd cell = new StrucDocTd();
+        cell.getContent().add(value);
+        return cell;
+    }
+
+    private StrucDocTd createCell(String id, String value) {
+        StrucDocTd cell = createCell(value);
+        cell.setID(id);
+        return cell;
+    }
+
+    private ST createTitle(String titleText) {
+        ST title = new ST();
+        title.setXmlMixed(titleText);
+        return title;
+    }
+
+    private boolean isPositive(Float value) {
+        return value != null && value > 0;
+    }
+
+    protected Beilagen getAppendixSection(List<Appendix> appendices, String contentPrefix) {
+        Beilagen appendix = new Beilagen();
+
+        ST stTitle = new ST();
+        stTitle.setXmlMixed("Beilagen");
+        appendix.setHl7Title(stTitle);
+
+        int index = 0;
+        for (Appendix appendixDoc : appendices) {
+            appendix.addHl7Entry(appendixDoc.getHl7CdaR2AppendixEntry(contentPrefix, index));
+            index++;
+        }
+
+        StrucDocText text = new StrucDocText();
+        AppendixNarrativeTextGenerator textbuilder = new AppendixNarrativeTextGenerator(appendix.getEntry(),
+                appendices);
+        text.getContent().add(textbuilder.toString());
+        appendix.setHl7Text(text);
+
+        return appendix;
+    }
 
 }

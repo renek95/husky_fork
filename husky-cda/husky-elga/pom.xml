@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.projecthusky</groupId>
 		<artifactId>husky-cda</artifactId>
-		<version>3.2.4</version>
+		<version>3.2.6</version>
 	</parent>
 
 
@@ -16,13 +16,16 @@
 		<dependency>
 			<groupId>org.projecthusky.common</groupId>
 			<artifactId>husky-common-at</artifactId>
-			<version>3.2.4</version>
+			<version>3.2.6</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
 		</dependency>
 	</dependencies>
 </project>

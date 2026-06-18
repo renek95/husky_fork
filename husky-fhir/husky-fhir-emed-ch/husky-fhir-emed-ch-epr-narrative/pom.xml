@@ -5,18 +5,18 @@
 	<parent>
 		<artifactId>husky-fhir-emed-ch</artifactId>
 		<groupId>org.projecthusky.fhir.emed.ch</groupId>
-		<version>3.2.4</version>
+		<version>3.2.6</version>
 	</parent>
 	<dependencies>
 		<dependency>
 			<groupId>org.projecthusky.fhir.emed.ch</groupId>
 			<artifactId>husky-fhir-emed-ch-common</artifactId>
-			<version>3.2.4</version>
+			<version>3.2.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projecthusky.fhir.emed.ch</groupId>
 			<artifactId>husky-fhir-emed-ch-epr</artifactId>
-			<version>3.2.4</version>
+			<version>3.2.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projecthusky.validation.service</groupId>

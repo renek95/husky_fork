@@ -28,7 +28,7 @@ public class LogoEntry extends POCDMT000040ObservationMedia {
     public LogoEntry() {
         super.getClassCode().add("OBS");
         super.getMoodCode().add("EVN");
-        super.getTemplateId().add(createHl7TemplateIdFixedValue("1.2.40.0.34.11.1.3.2"));
+        super.getTemplateId().add(createHl7TemplateIdFixedValue("1.2.40.0.34.6.0.11.3.53"));
         super.setValue(createHl7ValueFixedValue("B64"));
     }
 

@@ -4,7 +4,9 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import org.apache.commons.lang3.StringUtils;
-import org.projecthusky.cda.elga.generated.artdecor.base.*;
+import org.projecthusky.cda.elga.generated.artdecor.base.Brieftext;
+import org.projecthusky.cda.elga.generated.artdecor.base.HeaderParticipantAnsprechpartner;
+import org.projecthusky.cda.elga.generated.artdecor.base.LogoEntry;
 import org.projecthusky.cda.elga.generated.artdecor.ems.EpimsEntryHospitalization;
 import org.projecthusky.cda.elga.generated.artdecor.ems.EpimsHeaderRecordTarget;
 import org.projecthusky.cda.elga.generated.artdecor.ems.EpimsPatient;
@@ -13,8 +15,6 @@ import org.projecthusky.cda.elga.models.BaseDocument;
 import org.projecthusky.cda.elga.models.PatientCdaAt;
 import org.projecthusky.cda.elga.models.PractitionerCdaAt;
 import org.projecthusky.cda.elga.models.ems.*;
-import org.projecthusky.cda.elga.models.lab.LaboratoryReportData;
-import org.projecthusky.cda.elga.narrative.AnnotationTextBuilder;
 import org.projecthusky.cda.elga.utils.DateTimeUtils;
 import org.projecthusky.common.at.OrganizationAt;
 import org.projecthusky.common.at.enums.ClassCode;
@@ -28,7 +28,6 @@ import java.io.StringWriter;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Radiology extends BaseDocument {
@@ -48,9 +47,8 @@ public class Radiology extends BaseDocument {
     private InformationRecipient informationRecipient;
     private PractitionerCdaAt legalAuthenticator;
     private List<HeaderParticipantAnsprechpartner> participants;
+    private List<ServiceEntry> serviceEntries;
 
-    private String serviceCode;
-    private String serviceDescription;
     private String requirement;
     private String anamnese;
     private String indication;
@@ -331,22 +329,6 @@ public class Radiology extends BaseDocument {
         this.activitArea = activitArea;
     }
 
-    public String getServiceCode() {
-        return serviceCode;
-    }
-
-    public void setServiceCode(String serviceCode) {
-        this.serviceCode = serviceCode;
-    }
-
-    public String getServiceDescription() {
-        return serviceDescription;
-    }
-
-    public void setServiceDescription(String serviceDescription) {
-        this.serviceDescription = serviceDescription;
-    }
-
     public String getRequirement() {
         return requirement;
     }
@@ -605,7 +587,12 @@ public class Radiology extends BaseDocument {
             cda.getParticipant().addAll(participants);
         }
 
-        cda.getDocumentationOf().add(getAtcdabbrHeaderDocumentationOfServiceEvent(this.startImaging, this.stopImaging, this.serviceCode, this.serviceDescription));
+        if (serviceEntries != null && !serviceEntries.isEmpty()) {
+            for (ServiceEntry serviceEntry : serviceEntries) {
+                cda.getDocumentationOf().add(getAtcdabbrHeaderDocumentationOfServiceEvent(this.startImaging, this.stopImaging, serviceEntry.getServiceCode(), serviceEntry.getServiceDescription()));
+            }
+        }
+
         cda.setComponentOf(componentOf);
 
         if (this.getParentDocument() != null && this.getParentDocument().getRoot() != null) {
@@ -666,6 +653,13 @@ public class Radiology extends BaseDocument {
         participants.add(participant);
     }
 
+    public void addService(ServiceEntry serviceEntry) {
+        if (serviceEntries == null) {
+            serviceEntries = new ArrayList<>();
+        }
+        serviceEntries.add(serviceEntry);
+    }
+
     public void setComponentOf(POCDMT000040Component1 componentOf) {
         this.componentOf = componentOf;
     }
@@ -686,11 +680,17 @@ public class Radiology extends BaseDocument {
         structuredBody.getClassCode().add("DOCBODY");
         structuredBody.getMoodCode().add("EVN");
 
-        String requirement = StringUtils.isNotEmpty(this.requirement) ? this.requirement : "Anforderung wird nicht bekannt gegeben";
-        structuredBody.getComponent().add(createComp3FreeText(new Requirement(), requirement, "Anforderung"));
+        if (StringUtils.isNotEmpty(this.logo)) {
+            POCDMT000040Component3 comp3 = new POCDMT000040Component3();
+            comp3.setSection(createLogoSection());
+            structuredBody.getComponent().add(comp3);
+        }
 
-        String anamnese = StringUtils.isNotEmpty(this.anamnese) ? this.anamnese : "Anamnese wird nicht bekannt gegeben";
-        structuredBody.getComponent().add(createComp3FreeText(new Anamnese(), anamnese, "Anamnese"));
+        String requirementStr = StringUtils.isNotEmpty(this.requirement) ? this.requirement : "Anforderung wird nicht bekannt gegeben";
+        structuredBody.getComponent().add(createComp3FreeText(new Requirement(), requirementStr, "Anforderung"));
+
+        String anamneseStr = StringUtils.isNotEmpty(this.anamnese) ? this.anamnese : "Anamnese wird nicht bekannt gegeben";
+        structuredBody.getComponent().add(createComp3FreeText(new Anamnese(), anamneseStr, "Anamnese"));
 
         if (StringUtils.isNotEmpty(this.indication)) {
             structuredBody.getComponent().add(createComp3FreeText(new Indication(), indication, "Indikation"));
@@ -700,7 +700,7 @@ public class Radiology extends BaseDocument {
             structuredBody.getComponent().add(createComp3FreeText(new ClinicalPresentation(), clinicalPresentation, "Patientenstatus / Patientenangaben"));
         }
 
-        if (StringUtils.isNotEmpty(this.investigation)) {
+        if (StringUtils.isNotEmpty(this.investigation) || this.doseInMsv != null) {
             String effectiveTime = DateTimes.toDatetimeTs(this.startImaging, ZoneId.systemDefault()).getValue();
 
             if (this.doseInMsv != null) {
@@ -757,40 +757,40 @@ public class Radiology extends BaseDocument {
             structuredBody.getComponent().add(createComp3FreeText(new Addendum(), addendum, "Addendum"));
         }
 
-        if (StringUtils.isNotEmpty(this.logo)) {
-            POCDMT000040Component3 comp3 = new POCDMT000040Component3();
-            comp3.setSection(createLogoSection());
-            structuredBody.getComponent().add(comp3);
-        }
-
         return structuredBody;
     }
 
     protected POCDMT000040Section createLogoSection() {
-        POCDMT000040Section section = new POCDMT000040Section();
+        Brieftext section = new Brieftext();
+
+        section.getMoodCode().add("EVN");
+
+        II sectionTemplateId = new II();
+        sectionTemplateId.setRoot("1.2.40.0.34.11.1.2.1");
+        sectionTemplateId.setAssigningAuthorityName("ELGA");
+        section.setHl7TemplateId(sectionTemplateId);
 
         ST stTitle = new ST();
-        stTitle.setXmlMixed("Logo");
+        stTitle.setXmlMixed("Brieftext");
         section.setTitle(stTitle);
 
-        // LogoEntry erstellen und Base64-Bilddaten setzen
-        LogoEntry logoEntry = new LogoEntry();
-        ED edValue = logoEntry.getHl7Value();
-        edValue.setMediaType(this.logoMediaType);
-        edValue.setXmlMixed(this.logo); // Base64-kodierter Bildinhalt
+        StrucDocText text = new StrucDocText();
+        section.setText(text);
 
-        // Entry wrappen und zur Section hinzufügen
+        LogoEntry logoEntry = new LogoEntry();
+
+        II logoTemplateId = new II();
+        logoTemplateId.setRoot("1.2.40.0.34.11.1.3.2");
+        logoTemplateId.setAssigningAuthorityName("ELGA");
+        logoEntry.setHl7TemplateId(logoTemplateId);
+
+        ED edValue = logoEntry.getHl7Value();
+        edValue.setMediaType(this.logoMediaType != null ? this.logoMediaType : "image/png");
+        edValue.setXmlMixed(this.logo);
+
         POCDMT000040Entry entry = new POCDMT000040Entry();
         entry.setObservationMedia(logoEntry);
         section.getEntry().add(entry);
-
-        // Narrativen Text setzen (für CDA-Konformität erforderlich)
-        StrucDocText text = new StrucDocText();
-        StrucDocRenderMultiMedia renderMultiMedia = new StrucDocRenderMultiMedia();
-        renderMultiMedia.getReferencedObject().add(logoEntry);
-        ObjectFactory objectFactory = new ObjectFactory();
-        text.getContent().add(objectFactory.createStrucDocTextRenderMultiMedia(renderMultiMedia));
-        section.setText(text);
 
         return section;
     }
