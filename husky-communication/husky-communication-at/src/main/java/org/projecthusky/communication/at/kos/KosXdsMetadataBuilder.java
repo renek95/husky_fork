@@ -2,30 +2,96 @@ package org.projecthusky.communication.at.kos;
 
 import java.time.ZoneOffset;
 import org.openehealth.ipf.commons.ihe.xds.core.metadata.AvailabilityStatus;
+import org.openehealth.ipf.commons.ihe.xds.core.metadata.Hl7v2Based;
+import org.openehealth.ipf.commons.ihe.xds.core.metadata.LocalizedString;
+import org.openehealth.ipf.commons.ihe.xds.core.metadata.Timestamp;
+import org.projecthusky.common.at.enums.ClassCode;
+import org.projecthusky.common.at.enums.FormatCode;
+import org.projecthusky.common.at.enums.HealthcareFacilityTypeCode;
+import org.projecthusky.common.at.enums.LanguageCode;
+import org.projecthusky.common.at.enums.PracticeSettingCode;
+import org.projecthusky.common.at.enums.TypeCode;
+import org.projecthusky.common.at.utils.XdsMetadataUtilAt;
 import org.projecthusky.common.communication.DocumentMetadata;
+import org.projecthusky.common.model.Author;
 import org.projecthusky.common.model.Code;
 import org.projecthusky.common.model.Identificator;
+import org.projecthusky.communication.at.ExtendedReferenceId;
 
 /** Builds the fixed ELGA XDS-I.b metadata for a native DICOM KOS manifest. */
 public final class KosXdsMetadataBuilder {
-    public static final String LOINC = "2.16.840.1.113883.6.1";
-    public static final String KOS_CLASS_CODE = "55113-5";
-    public static final String KOS_FORMAT_CODE = KosDocument.SOP_CLASS_UID;
-    public static final String DICOM_UID_REGISTRY = "1.2.840.10008.2.6.1";
+    private static final String OWN_DOCUMENT_SET_ID_TYPE_CODE = "urn:elga:iti:xds:2014:ownDocument_setId";
+    private static final String ACCESSION_NUMBER_TYPE_CODE = "urn:ihe:iti:xds:2013:accession";
+    private static final String CODED_LANGUAGE = "de-AT";
+    private static final String CONFIDENTIALITY_CODE = "N";
+    private static final String CONFIDENTIALITY_CODE_SCHEME = "2.16.840.1.113883.5.25";
+    private static final String CONFIDENTIALITY_CODE_DISPLAY_NAME = "normal";
+
     private KosXdsMetadataBuilder() { }
-    public static DocumentMetadata build(KosDocument kos, Identificator patientId, Identificator sourcePatientId, Code appc) {
+
+    /**
+     * @param author the document author; must be a real person. The ELGA fallback to
+     *               Modality+Manufacturer+ManufacturerModelName as author when no performing
+     *               physician is known (KOS Implementierungsleitfaden 5.1.1.2) is not implemented.
+     */
+    public static DocumentMetadata build(KosDocument kos, Identificator patientId, Identificator sourcePatientId,
+                                          Code appc, String organizationOid,
+                                          HealthcareFacilityTypeCode healthcareFacilityTypeCode,
+                                          PracticeSettingCode practiceSettingCode, Author author) {
         if (appc == null) throw new IllegalArgumentException("ELGA requires at least one APPC eventCodeList entry");
+        if (kos.study().accessionNumber() == null || kos.study().accessionNumber().isBlank()) {
+            throw new IllegalArgumentException(
+                    "ELGA requires an accessionNumber referenceIdList entry (KOS Implementierungsleitfaden); RAD-68 would be rejected otherwise");
+        }
+
         var metadata = new DocumentMetadata();
         metadata.setAvailabilityStatus(AvailabilityStatus.APPROVED);
         metadata.setDestinationPatientId(patientId); metadata.setSourcePatientId(sourcePatientId);
-        metadata.setClassCode(code(KOS_CLASS_CODE, LOINC, "Key images Document Radiology"));
-        metadata.setTypeCode(code(KOS_CLASS_CODE, LOINC, "Key images Document Radiology"));
-        metadata.setFormatCode(code(KOS_FORMAT_CODE, DICOM_UID_REGISTRY, "Key Object Selection Document"));
+        metadata.setCodedLanguage(CODED_LANGUAGE);
+        metadata.setClassCode(ClassCode.KEY_IMAGES_DOCUMENT_RADIOLOGY.getCode());
+        metadata.setTypeCode(TypeCode.KEY_IMAGES_DOCUMENT_RADIOLOGY.getCode());
+        metadata.setFormatCode(FormatCode.IHE_KOS_DOCUMENT.getCode());
         metadata.setMimeType("application/dicom");
         metadata.setCreationTime(kos.study().dateTime().atZone(ZoneOffset.UTC));
         metadata.setTitle("KO " + kos.study().id());
         metadata.getDocumentEntry().getEventCodeList().add(org.projecthusky.common.utils.XdsMetadataUtil.convertEhcCodeToCode(appc));
+
+        metadata.getDocumentEntry().setServiceStartTime(new Timestamp(kos.study().dateTime().atZone(ZoneOffset.UTC), null));
+
+        org.openehealth.ipf.commons.ihe.xds.core.metadata.Code facilityTypeCode =
+                new org.openehealth.ipf.commons.ihe.xds.core.metadata.Code();
+        facilityTypeCode.setCode(healthcareFacilityTypeCode.getCodeValue());
+        facilityTypeCode.setSchemeName(healthcareFacilityTypeCode.getCodeSystemId());
+        facilityTypeCode.setDisplayName(new LocalizedString(healthcareFacilityTypeCode.getDisplayNameAt(LanguageCode.GERMAN_AT)));
+        metadata.getDocumentEntry().setHealthcareFacilityTypeCode(facilityTypeCode);
+
+        org.openehealth.ipf.commons.ihe.xds.core.metadata.Code practiceSettingCodeValue =
+                new org.openehealth.ipf.commons.ihe.xds.core.metadata.Code();
+        practiceSettingCodeValue.setCode(practiceSettingCode.getCodeValue());
+        practiceSettingCodeValue.setSchemeName(practiceSettingCode.getCodeSystemId());
+        practiceSettingCodeValue.setDisplayName(new LocalizedString(practiceSettingCode.getDisplayNameAt(LanguageCode.GERMAN_AT)));
+        metadata.getDocumentEntry().setPracticeSettingCode(practiceSettingCodeValue);
+
+        metadata.addAuthor(author);
+
+        org.openehealth.ipf.commons.ihe.xds.core.metadata.Code confidentialityCode =
+                new org.openehealth.ipf.commons.ihe.xds.core.metadata.Code();
+        confidentialityCode.setCode(CONFIDENTIALITY_CODE);
+        confidentialityCode.setSchemeName(CONFIDENTIALITY_CODE_SCHEME);
+        confidentialityCode.setDisplayName(new LocalizedString(CONFIDENTIALITY_CODE_DISPLAY_NAME));
+        metadata.getDocumentEntry().getConfidentialityCodes().add(confidentialityCode);
+
+        metadata.getDocumentEntry().getReferenceIdList().add(referenceId(
+                new Identificator(organizationOid, kos.study().instanceUid()), OWN_DOCUMENT_SET_ID_TYPE_CODE));
+        metadata.getDocumentEntry().getReferenceIdList().add(referenceId(
+                new Identificator(organizationOid, kos.study().accessionNumber()), ACCESSION_NUMBER_TYPE_CODE));
+
         return metadata;
     }
-    private static Code code(String value, String scheme, String displayName) { return new Code(value, displayName, scheme); }
+
+    private static ExtendedReferenceId referenceId(Identificator id, String identifierTypeCode) {
+        return Hl7v2Based.parse(
+                XdsMetadataUtilAt.createCxi(id, identifierTypeCode, null),
+                ExtendedReferenceId.class);
+    }
 }

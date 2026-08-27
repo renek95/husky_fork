@@ -236,7 +236,10 @@ public enum FormatCode implements ValueSetEnumInterfaceAt {
 	ELGA_PHC_2017("urn:elga:phc:2017", "PHC Statusbericht", "PHC Statusbericht"),
 
 	ELGA_IMMUNIZATION_RECORD_2019("urn:hl7-at:eImpf:2019", "HL7 Austria e-Impfpass 2019",
-			"HL7 Austria e-Impfpass 2019");
+			"HL7 Austria e-Impfpass 2019"),
+
+	IHE_KOS_DOCUMENT("1.2.840.10008.5.1.4.1.1.88.59", "1.2.840.10008.2.6.1",
+			"DICOM Manifest (DICOM KOS SOP Class UID)", "KOS Dokument");
 
 	/**
 	 * Identifier of the value set
@@ -315,16 +318,30 @@ public enum FormatCode implements ValueSetEnumInterfaceAt {
 	private Map<LanguageCode, String> displayNames;
 
 	/**
-	 * Instantiates this Enum Object with a given Code and Display Name
+	 * Instantiates this Enum Object with a given Code and Display Name. The code
+	 * system defaults to {@link #OID_FORMAT_CODE}.
+	 *
+	 * @param code          code
+	 * @param displayName   the default display name
+	 * @param displayNameDe the display name de
+	 */
+	FormatCode(String code, String displayName, String displayNameDe) {
+		this(code, OID_FORMAT_CODE, displayName, displayNameDe);
+	}
+
+	/**
+	 * Instantiates this Enum Object with a given Code, Code System and Display
+	 * Name. Used for format codes that are not part of the
+	 * {@link #OID_FORMAT_CODE} value set, e.g. DICOM SOP Class UIDs.
 	 *
 	 * @param code          code
 	 * @param codeSystem    codeSystem
 	 * @param displayName   the default display name
 	 * @param displayNameDe the display name de
 	 */
-	FormatCode(String code, String displayName, String displayNameDe) {
+	FormatCode(String code, String codeSystem, String displayName, String displayNameDe) {
 		this.code = code;
-		this.codeSystem = OID_FORMAT_CODE;
+		this.codeSystem = codeSystem;
 		displayNames = new HashMap<>();
 		displayNames.put(null, displayName);
 		displayNames.put(LanguageCode.GERMAN_AT, displayNameDe);

@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.projecthusky.communication</groupId>
     <artifactId>husky-communication</artifactId>
-    <version>3.2.6</version>
+    <version>3.2.7-SNAPSHOT</version>
   </parent>
 
   <repositories>
@@ -19,13 +19,13 @@
 		<dependency>
 			<groupId>org.projecthusky.communication</groupId>
 			<artifactId>husky-communication-gen</artifactId>
-    			<version>3.2.6</version>
+    			<version>3.2.7-SNAPSHOT</version>
 
 		</dependency>
 		<dependency>
 			<groupId>org.projecthusky.common</groupId>
 			<artifactId>husky-common-at</artifactId>
-    			<version>3.2.6</version>
+    			<version>3.2.7-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.dcm4che</groupId>
@@ -60,14 +60,14 @@
 		<dependency>
 			<groupId>org.projecthusky.communication</groupId>
 			<artifactId>husky-communication-gen</artifactId>
-			<version>3.2.6</version>
+			<version>3.2.7-SNAPSHOT</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.projecthusky.common</groupId>
 			<artifactId>husky-common-gen</artifactId>
-			<version>3.2.6</version>
+			<version>3.2.7-SNAPSHOT</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
