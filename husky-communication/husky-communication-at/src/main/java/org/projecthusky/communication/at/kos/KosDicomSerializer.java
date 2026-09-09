@@ -22,17 +22,33 @@ public final class KosDicomSerializer {
         ds.setString(Tag.PatientName, VR.PN, kos.patient().name());
         ds.setString(Tag.PatientID, VR.LO, kos.patient().id());
         if (kos.patient().birthDate() != null) ds.setString(Tag.PatientBirthDate, VR.DA, DATE.format(kos.patient().birthDate()));
+        else ds.setNull(Tag.PatientBirthDate, VR.DA);
         if (kos.patient().sex() != null) ds.setString(Tag.PatientSex, VR.CS, kos.patient().sex());
+        else ds.setNull(Tag.PatientSex, VR.CS);
         ds.setString(Tag.StudyInstanceUID, VR.UI, kos.study().instanceUid());
         if (kos.study().dateTime() != null) {
             ds.setString(Tag.StudyDate, VR.DA, DATE.format(kos.study().dateTime()));
             ds.setString(Tag.StudyTime, VR.TM, TIME.format(kos.study().dateTime()));
+        } else {
+            ds.setNull(Tag.StudyDate, VR.DA);
+            ds.setNull(Tag.StudyTime, VR.TM);
         }
         ds.setString(Tag.StudyID, VR.SH, kos.study().id());
         ds.setString(Tag.AccessionNumber, VR.SH, kos.study().accessionNumber());
+        ds.setNull(Tag.ReferringPhysicianName, VR.PN);
+        var referencedRequest = item(ds.newSequence(Tag.ReferencedRequestSequence, 1));
+        referencedRequest.setString(Tag.StudyInstanceUID, VR.UI, kos.study().instanceUid());
+        referencedRequest.setString(Tag.AccessionNumber, VR.SH, kos.study().accessionNumber());
+        referencedRequest.newSequence(Tag.ReferencedStudySequence, 0);
+        referencedRequest.setNull(Tag.PlacerOrderNumberImagingServiceRequest, VR.LO);
+        referencedRequest.setNull(Tag.FillerOrderNumberImagingServiceRequest, VR.LO);
+        referencedRequest.setNull(Tag.RequestedProcedureID, VR.SH);
+        referencedRequest.setNull(Tag.RequestedProcedureDescription, VR.LO);
+        referencedRequest.newSequence(Tag.RequestedProcedureCodeSequence, 0);
         ds.setString(Tag.Modality, VR.CS, KosDocument.MODALITY);
         ds.setString(Tag.SeriesInstanceUID, VR.UI, kos.kosSeriesInstanceUid());
         ds.setInt(Tag.SeriesNumber, VR.IS, kos.seriesNumber());
+        ds.newSequence(Tag.ReferencedPerformedProcedureStepSequence, 0);
         ds.setString(Tag.Manufacturer, VR.LO, kos.manufacturer());
         ds.setInt(Tag.InstanceNumber, VR.IS, kos.instanceNumber());
         ds.setString(Tag.ContentDate, VR.DA, DATE.format(java.time.LocalDate.now()));

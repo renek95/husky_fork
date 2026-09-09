@@ -1,22 +1,18 @@
 package org.projecthusky.communication.at.kos;
 
-import java.time.ZoneOffset;
 import org.openehealth.ipf.commons.ihe.xds.core.metadata.AvailabilityStatus;
 import org.openehealth.ipf.commons.ihe.xds.core.metadata.Hl7v2Based;
 import org.openehealth.ipf.commons.ihe.xds.core.metadata.LocalizedString;
 import org.openehealth.ipf.commons.ihe.xds.core.metadata.Timestamp;
-import org.projecthusky.common.at.enums.ClassCode;
-import org.projecthusky.common.at.enums.FormatCode;
-import org.projecthusky.common.at.enums.HealthcareFacilityTypeCode;
-import org.projecthusky.common.at.enums.LanguageCode;
-import org.projecthusky.common.at.enums.PracticeSettingCode;
-import org.projecthusky.common.at.enums.TypeCode;
+import org.projecthusky.common.at.AuthorAt;
+import org.projecthusky.common.at.enums.*;
 import org.projecthusky.common.at.utils.XdsMetadataUtilAt;
 import org.projecthusky.common.communication.DocumentMetadata;
-import org.projecthusky.common.model.Author;
 import org.projecthusky.common.model.Code;
 import org.projecthusky.common.model.Identificator;
 import org.projecthusky.communication.at.ExtendedReferenceId;
+
+import java.time.ZoneOffset;
 
 /** Builds the fixed ELGA XDS-I.b metadata for a native DICOM KOS manifest. */
 public final class KosXdsMetadataBuilder {
@@ -37,7 +33,8 @@ public final class KosXdsMetadataBuilder {
     public static DocumentMetadata build(KosDocument kos, Identificator patientId, Identificator sourcePatientId,
                                           Code appc, String organizationOid,
                                           HealthcareFacilityTypeCode healthcareFacilityTypeCode,
-                                          PracticeSettingCode practiceSettingCode, Author author) {
+                                          PracticeSettingCode practiceSettingCode, AuthorAt author,
+                                          String homeCommunityId) {
         if (appc == null) throw new IllegalArgumentException("ELGA requires at least one APPC eventCodeList entry");
         if (kos.study().accessionNumber() == null || kos.study().accessionNumber().isBlank()) {
             throw new IllegalArgumentException(
@@ -53,7 +50,9 @@ public final class KosXdsMetadataBuilder {
         metadata.setFormatCode(FormatCode.IHE_KOS_DOCUMENT.getCode());
         metadata.setMimeType("application/dicom");
         metadata.setCreationTime(kos.study().dateTime().atZone(ZoneOffset.UTC));
-        metadata.setTitle("KO " + kos.study().id());
+        metadata.setTitle(appc.getDisplayName());
+        metadata.setUniqueId(kos.kosSopInstanceUid());
+        metadata.getDocumentEntry().setHomeCommunityId(homeCommunityId);
         metadata.getDocumentEntry().getEventCodeList().add(org.projecthusky.common.utils.XdsMetadataUtil.convertEhcCodeToCode(appc));
 
         metadata.getDocumentEntry().setServiceStartTime(new Timestamp(kos.study().dateTime().atZone(ZoneOffset.UTC), null));
@@ -82,16 +81,16 @@ public final class KosXdsMetadataBuilder {
         metadata.getDocumentEntry().getConfidentialityCodes().add(confidentialityCode);
 
         metadata.getDocumentEntry().getReferenceIdList().add(referenceId(
-                new Identificator(organizationOid, kos.study().instanceUid()), OWN_DOCUMENT_SET_ID_TYPE_CODE));
+                new Identificator(organizationOid, kos.study().instanceUid()), OWN_DOCUMENT_SET_ID_TYPE_CODE, homeCommunityId));
         metadata.getDocumentEntry().getReferenceIdList().add(referenceId(
-                new Identificator(organizationOid, kos.study().accessionNumber()), ACCESSION_NUMBER_TYPE_CODE));
+                new Identificator(organizationOid, kos.study().accessionNumber()), ACCESSION_NUMBER_TYPE_CODE, null));
 
         return metadata;
     }
 
-    private static ExtendedReferenceId referenceId(Identificator id, String identifierTypeCode) {
+    private static ExtendedReferenceId referenceId(Identificator id, String identifierTypeCode, String homeCommunityId) {
         return Hl7v2Based.parse(
-                XdsMetadataUtilAt.createCxi(id, identifierTypeCode, null),
+                XdsMetadataUtilAt.createCxi(id, identifierTypeCode, homeCommunityId),
                 ExtendedReferenceId.class);
     }
 }

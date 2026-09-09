@@ -43,7 +43,7 @@ public class AuthorAt extends Author {
 					author.getAsAuthor().getAssignedAuthoringDevice().getManufacturerModelName().getDisplayName());
 			namePerson
 					.setGivenName(author.getAsAuthor().getAssignedAuthoringDevice().getSoftwareName().getDisplayName());
-
+			ap.setName(namePerson);
 		} else {
 			if (author.getIds() != null && !author.getIds().isEmpty() && author.getIds().get(0) != null) {
 				ap.setId(XdsMetadataUtil.convertEhcIdentificator(author.getIds().get(0)));
@@ -55,7 +55,6 @@ public class AuthorAt extends Author {
 			}
 		}
 
-		ap.setName(namePerson);
 		at.setAuthorPerson(ap);
 
 		// Institution
