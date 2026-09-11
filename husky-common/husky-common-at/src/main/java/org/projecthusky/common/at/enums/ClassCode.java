@@ -27,7 +27,7 @@ public enum ClassCode implements ValueSetEnumInterfaceAt {
 			"Befund bildgebende Diagnostik"),
 
 	KEY_IMAGES_DOCUMENT_RADIOLOGY("55113-5", "2.16.840.1.113883.6.1",
-			"Key images Doc Radiology", "KOS Objekte"),
+			"Key images Document Radiology", "KOS Objekte"),
 
 	PHYSICIAN_NOTE("75476-2", "2.16.840.1.113883.6.1", "Physician note",
 			"Ärztlicher Befund"),
