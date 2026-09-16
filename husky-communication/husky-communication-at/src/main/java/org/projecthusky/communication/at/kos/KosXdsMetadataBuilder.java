@@ -13,6 +13,8 @@ import org.projecthusky.common.model.Identificator;
 import org.projecthusky.communication.at.ExtendedReferenceId;
 
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /** Builds the fixed ELGA XDS-I.b metadata for a native DICOM KOS manifest. */
 public final class KosXdsMetadataBuilder {
@@ -31,11 +33,12 @@ public final class KosXdsMetadataBuilder {
      *               physician is known (KOS Implementierungsleitfaden 5.1.1.2) is not implemented.
      */
     public static DocumentMetadata build(KosDocument kos, Identificator patientId, Identificator sourcePatientId,
-                                          Code appc, String organizationOid,
+                                          List<Code> appcCodes, String organizationOid,
                                           HealthcareFacilityTypeCode healthcareFacilityTypeCode,
                                           PracticeSettingCode practiceSettingCode, AuthorAt author,
                                           String homeCommunityId) {
-        if (appc == null) throw new IllegalArgumentException("ELGA requires at least one APPC eventCodeList entry");
+        if (appcCodes == null || appcCodes.isEmpty())
+            throw new IllegalArgumentException("ELGA requires at least one APPC eventCodeList entry");
         if (kos.study().accessionNumber() == null || kos.study().accessionNumber().isBlank()) {
             throw new IllegalArgumentException(
                     "ELGA requires an accessionNumber referenceIdList entry (KOS Implementierungsleitfaden); RAD-68 would be rejected otherwise");
@@ -50,10 +53,11 @@ public final class KosXdsMetadataBuilder {
         metadata.setFormatCode(FormatCode.IHE_KOS_DOCUMENT.getCode());
         metadata.setMimeType("application/dicom");
         metadata.setCreationTime(kos.study().dateTime().atZone(ZoneOffset.UTC));
-        metadata.setTitle(appc.getDisplayName());
+        metadata.setTitle(appcCodes.stream().map(Code::getDisplayName).collect(Collectors.joining("; ")));
         metadata.setUniqueId(kos.kosSopInstanceUid());
         metadata.getDocumentEntry().setHomeCommunityId(homeCommunityId);
-        metadata.getDocumentEntry().getEventCodeList().add(org.projecthusky.common.utils.XdsMetadataUtil.convertEhcCodeToCode(appc));
+        appcCodes.forEach(appc -> metadata.getDocumentEntry().getEventCodeList()
+                .add(org.projecthusky.common.utils.XdsMetadataUtil.convertEhcCodeToCode(appc)));
 
         metadata.getDocumentEntry().setServiceStartTime(new Timestamp(kos.study().dateTime().atZone(ZoneOffset.UTC), null));
 
