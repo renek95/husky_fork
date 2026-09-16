@@ -239,7 +239,7 @@ public enum FormatCode implements ValueSetEnumInterfaceAt {
 			"HL7 Austria e-Impfpass 2019"),
 
 	IHE_KOS_DOCUMENT("1.2.840.10008.5.1.4.1.1.88.59", "1.2.840.10008.2.6.1",
-			"DICOM Manifest (DICOM KOS SOP Class UID)", "KOS Dokument");
+			"Key Object Selection Document", "KOS Dokument");
 
 	/**
 	 * Identifier of the value set

@@ -12,6 +12,7 @@ public abstract class HuskyUtils {
 
 	public static final String SERVER_IN_LOGGER = "#serverInLogger";
 	public static final String SERVER_OUT_LOGGER = "#serverOutLogger";
+	public static final String AUTHOR_INSTITUTION_ISO_FIX = "#authorInstitutionIsoFixInterceptor";
 	public static final String AUDIT_CONTEXT = "#auditContext";
 	public static final String HTTP_CLIENT_POLICY = "#huskyHttpClientPolicy";
 	public static final String HTTPS_LITERAL = "https://";
@@ -82,12 +83,13 @@ public abstract class HuskyUtils {
 		
 
 		var endpoint = String.format(
-				"%s://%s?inInterceptors=%s&inFaultInterceptors=%s&outInterceptors=%s&outFaultInterceptors=%s&secure=%s&audit=%s&auditContext=%s&httpClientPolicy=%s", //
+				"%s://%s?inInterceptors=%s&inFaultInterceptors=%s&outInterceptors=%s,%s&outFaultInterceptors=%s&secure=%s&audit=%s&auditContext=%s&httpClientPolicy=%s", //
 				transactionType, //
 				strippedUri, //
 				SERVER_IN_LOGGER, //
 				SERVER_IN_LOGGER, //
 				SERVER_OUT_LOGGER, //
+				AUTHOR_INSTITUTION_ISO_FIX, //
 				SERVER_OUT_LOGGER, //
 				secure, //
 				auditEnabled, //

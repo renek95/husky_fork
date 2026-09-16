@@ -436,6 +436,9 @@ public class XdsMetadataUtil {
 			org.setOrganizationName(xon.getPrimaryName().getFullName());
 		}
 
+		// Flache Basis-Form (9 Carets, keine AssigningAuthority) - das erwartete "&ISO"-Suffix wird nicht hier,
+		// sondern per AuthorInstitutionIsoFixInterceptor (klinix_service) direkt auf dem ebRIM-Objektgraphen vor
+		// dem XML-Marshalling angehaengt, da HAPI ein rohes "&" in diesem einfachen Feld sonst zu "\T\" escaped.
 		if (xon.getPrimaryIdentificator() != null) {
 			org.setIdNumber(xon.getPrimaryIdentificator().getRoot());
 		}
