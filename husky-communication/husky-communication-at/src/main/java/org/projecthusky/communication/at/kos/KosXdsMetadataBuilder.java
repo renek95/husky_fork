@@ -12,7 +12,9 @@ import org.projecthusky.common.model.Code;
 import org.projecthusky.common.model.Identificator;
 import org.projecthusky.communication.at.ExtendedReferenceId;
 
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +26,7 @@ public final class KosXdsMetadataBuilder {
     private static final String CONFIDENTIALITY_CODE = "N";
     private static final String CONFIDENTIALITY_CODE_SCHEME = "2.16.840.1.113883.5.25";
     private static final String CONFIDENTIALITY_CODE_DISPLAY_NAME = "normal";
+    private static final ZoneId LOCAL_ZONE = ZoneId.of("Europe/Vienna");
 
     private KosXdsMetadataBuilder() { }
 
@@ -52,14 +55,15 @@ public final class KosXdsMetadataBuilder {
         metadata.setTypeCode(TypeCode.KEY_IMAGES_DOCUMENT_RADIOLOGY.getCode());
         metadata.setFormatCode(FormatCode.IHE_KOS_DOCUMENT.getCode());
         metadata.setMimeType("application/dicom");
-        metadata.setCreationTime(kos.study().dateTime().atZone(ZoneOffset.UTC));
+        ZonedDateTime studyDateTimeUtc = kos.study().dateTime().atZone(LOCAL_ZONE).withZoneSameInstant(ZoneOffset.UTC);
+        metadata.setCreationTime(studyDateTimeUtc);
         metadata.setTitle(appcCodes.stream().map(Code::getDisplayName).collect(Collectors.joining("; ")));
         metadata.setUniqueId(kos.kosSopInstanceUid());
         metadata.getDocumentEntry().setHomeCommunityId(homeCommunityId);
         appcCodes.forEach(appc -> metadata.getDocumentEntry().getEventCodeList()
                 .add(org.projecthusky.common.utils.XdsMetadataUtil.convertEhcCodeToCode(appc)));
 
-        metadata.getDocumentEntry().setServiceStartTime(new Timestamp(kos.study().dateTime().atZone(ZoneOffset.UTC), null));
+        metadata.getDocumentEntry().setServiceStartTime(new Timestamp(studyDateTimeUtc, null));
 
         org.openehealth.ipf.commons.ihe.xds.core.metadata.Code facilityTypeCode =
                 new org.openehealth.ipf.commons.ihe.xds.core.metadata.Code();

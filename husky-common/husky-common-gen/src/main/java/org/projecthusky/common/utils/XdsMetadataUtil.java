@@ -410,12 +410,8 @@ public class XdsMetadataUtil {
 				a.getAuthorRole().add(role);
 			}
 
-			// Speciality
-			Identifiable speciality = null;
-			if (at.getSpeciality() != null) {
-				speciality = new Identifiable(at.getSpeciality().getCode(),
-						new AssigningAuthority(at.getSpeciality().getCodeSystem()));
-				a.getAuthorSpecialty().add(speciality);
+			if (at.getSpeciality() != null && at.getSpeciality().getDisplayName() != null) {
+				a.getAuthorSpecialty().add(new Identifiable(at.getSpeciality().getDisplayName()));
 			}
 		}
 

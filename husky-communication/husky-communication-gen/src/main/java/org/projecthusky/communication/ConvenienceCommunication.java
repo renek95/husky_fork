@@ -897,9 +897,10 @@ public class ConvenienceCommunication extends CamelService {
                 retrieveDocumentSet.addReferenceTo(element.getIpfDocumentEntry());
             }
         }
-        final String endpoint = HuskyUtils.createEndpoint(XDS.Interactions.ITI_43.getWsTransactionConfiguration().getName(),
+        final String endpoint = HuskyUtils.createRetrievalEndpoint(XDS.Interactions.ITI_43.getWsTransactionConfiguration().getName(),
                 affinityDomain.getRepositoryDestination().getUri(), //
-                atnaConfigMode.equals(AtnaConfigMode.SECURE));
+                atnaConfigMode.equals(AtnaConfigMode.SECURE), //
+                HuskyUtils.RETRIEVE_HTTP_CLIENT_POLICY);
 
         log.info(LOG_SEND_REQUEST, endpoint);
 
@@ -928,10 +929,11 @@ public class ConvenienceCommunication extends CamelService {
                     "No imaging repository destination configured on the AffinityDomain (RAD-69 requires its own endpoint, "
                             + "distinct from the XDS document repository destination)");
         }
-        final String endpoint = HuskyUtils.createEndpoint(
+        final String endpoint = HuskyUtils.createRetrievalEndpoint(
                 RAD.Interactions.RAD_69.getWsTransactionConfiguration().getName(),
                 imagingRepositoryDestination.getUri(),
-                atnaConfigMode.equals(AtnaConfigMode.SECURE));
+                atnaConfigMode.equals(AtnaConfigMode.SECURE), //
+                HuskyUtils.RETRIEVE_HTTP_CLIENT_POLICY);
 
         log.info(LOG_SEND_REQUEST, endpoint);
 
