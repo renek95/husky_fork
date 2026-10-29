@@ -394,6 +394,14 @@ public class DocumentMetadataAt extends org.projecthusky.common.communication.Do
 
 	}
 
+	public void setAccessionNumberReferenceId(Identificator id) {
+		ExtendedReferenceId referenceId = Hl7v2Based.parse(
+				XdsMetadataUtilAt.createCxi(id, "urn:ihe:iti:xds:2013:accession", null),
+				ExtendedReferenceId.class);
+
+		getDocumentEntry().getReferenceIdList().add(referenceId);
+	}
+
 	public void setServiceEventStartTime(ZonedDateTime startDate) {
 		if (startDate != null) {
 			getDocumentEntry().setServiceStartTime(new Timestamp(startDate, null));

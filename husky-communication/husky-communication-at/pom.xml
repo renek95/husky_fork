@@ -5,20 +5,32 @@
   <parent>
     <groupId>org.projecthusky.communication</groupId>
     <artifactId>husky-communication</artifactId>
-    <version>3.2.6</version>
+    <version>3.2.7</version>
   </parent>
+
+  <repositories>
+    <repository>
+      <id>dcm4che</id>
+      <url>https://www.dcm4che.org/maven2/</url>
+    </repository>
+  </repositories>
   
   <dependencies>
 		<dependency>
 			<groupId>org.projecthusky.communication</groupId>
 			<artifactId>husky-communication-gen</artifactId>
-    			<version>3.2.6</version>
+    			<version>3.2.7</version>
 
 		</dependency>
 		<dependency>
 			<groupId>org.projecthusky.common</groupId>
 			<artifactId>husky-common-at</artifactId>
-    			<version>3.2.6</version>
+    			<version>3.2.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.dcm4che</groupId>
+			<artifactId>dcm4che-core</artifactId>
+			<version>5.34.3</version>
 		</dependency>
 
 		<dependency>
@@ -48,14 +60,14 @@
 		<dependency>
 			<groupId>org.projecthusky.communication</groupId>
 			<artifactId>husky-communication-gen</artifactId>
-			<version>3.2.6</version>
+			<version>3.2.7</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.projecthusky.common</groupId>
 			<artifactId>husky-common-gen</artifactId>
-			<version>3.2.6</version>
+			<version>3.2.7</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>

@@ -33,6 +33,9 @@ public class AffinityDomain {
 	/** Identities like SSN. */
 	private Set<String> otherIdsOidSet;
 
+	/** The destination to the imaging document repository (e.g. RAD-69). */
+	private Destination imagingRepositoryDestination = null;
+
 	/** The destination to for the pdq of the mpi. */
 	private Destination pdqDestination = null;
 
@@ -142,6 +145,15 @@ public class AffinityDomain {
 	}
 
 	/**
+	 * Gets the imaging repository destination (e.g. RAD-69 endpoint).
+	 *
+	 * @return the imaging repository destination
+	 */
+	public Destination getImagingRepositoryDestination() {
+		return imagingRepositoryDestination;
+	}
+
+	/**
 	 * Gets the pdq destination.
 	 *
 	 * @return the pdq destination
@@ -224,6 +236,16 @@ public class AffinityDomain {
 	 */
 	public void setOtherIdsOidSet(Set<String> otherIdsOidSet) {
 		this.otherIdsOidSet = otherIdsOidSet;
+	}
+
+	/**
+	 * Sets the imaging repository destination (e.g. RAD-69 endpoint).
+	 *
+	 * @param imagingRepositoryDestination
+	 *            the new imaging repository destination
+	 */
+	public void setImagingRepositoryDestination(Destination imagingRepositoryDestination) {
+		this.imagingRepositoryDestination = imagingRepositoryDestination;
 	}
 
 	/**

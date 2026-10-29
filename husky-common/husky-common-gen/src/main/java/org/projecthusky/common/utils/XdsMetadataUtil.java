@@ -410,12 +410,8 @@ public class XdsMetadataUtil {
 				a.getAuthorRole().add(role);
 			}
 
-			// Speciality
-			Identifiable speciality = null;
-			if (at.getSpeciality() != null) {
-				speciality = new Identifiable(at.getSpeciality().getCode(),
-						new AssigningAuthority(at.getSpeciality().getCodeSystem()));
-				a.getAuthorSpecialty().add(speciality);
+			if (at.getSpeciality() != null && at.getSpeciality().getDisplayName() != null) {
+				a.getAuthorSpecialty().add(new Identifiable(at.getSpeciality().getDisplayName()));
 			}
 		}
 
@@ -437,10 +433,7 @@ public class XdsMetadataUtil {
 		}
 
 		if (xon.getPrimaryIdentificator() != null) {
-			org.setIdNumber(xon.getPrimaryIdentificator().getExtension());
-			var assigningAuthority = new AssigningAuthority();
-			assigningAuthority.setUniversalId(xon.getPrimaryIdentificator().getExtension());
-			org.setAssigningAuthority(assigningAuthority);
+			org.setIdNumber(xon.getPrimaryIdentificator().getRoot());
 		}
 
 		return org;
@@ -480,6 +473,9 @@ public class XdsMetadataUtil {
 	 * @return the eHC Patient
 	 */
 	public static Patient convertOhtSourcePatientInfoType(PatientInfo spit) {
+		if (spit == null) {
+			return null;
+		}
 		final var p = new Patient();
 
 		// Name

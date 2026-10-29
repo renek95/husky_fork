@@ -15,6 +15,7 @@ import jakarta.mail.util.ByteArrayDataSource;
 import org.apache.camel.CamelContext;
 import org.apache.commons.text.StringEscapeUtils;
 import org.openehealth.ipf.commons.core.OidGenerator;
+import org.openehealth.ipf.commons.ihe.xds.RAD;
 import org.openehealth.ipf.commons.ihe.xds.XDS;
 import org.openehealth.ipf.commons.ihe.xds.core.metadata.*;
 import org.openehealth.ipf.commons.ihe.xds.core.metadata.Timestamp.Precision;
@@ -22,6 +23,7 @@ import org.openehealth.ipf.commons.ihe.xds.core.requests.ProvideAndRegisterDocum
 import org.openehealth.ipf.commons.ihe.xds.core.requests.QueryRegistry;
 import org.openehealth.ipf.commons.ihe.xds.core.requests.RegisterDocumentSet;
 import org.openehealth.ipf.commons.ihe.xds.core.requests.RetrieveDocumentSet;
+import org.openehealth.ipf.commons.ihe.xds.core.requests.RetrieveImagingDocumentSet;
 import org.openehealth.ipf.commons.ihe.xds.core.requests.query.QueryReturnType;
 import org.openehealth.ipf.commons.ihe.xds.core.responses.QueryResponse;
 import org.openehealth.ipf.commons.ihe.xds.core.responses.Response;
@@ -42,7 +44,6 @@ import org.projecthusky.communication.xd.xdm.IndexHtm;
 import org.projecthusky.communication.xd.xdm.ReadmeTxt;
 import org.projecthusky.communication.xd.xdm.XdmContents;
 import org.projecthusky.fhir.structures.gen.FhirCommon;
-import org.projecthusky.fhir.structures.utils.FhirUtilities;
 import org.projecthusky.xua.core.SecurityHeaderElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -895,14 +896,47 @@ public class ConvenienceCommunication extends CamelService {
                 retrieveDocumentSet.addReferenceTo(element.getIpfDocumentEntry());
             }
         }
-        final String endpoint = HuskyUtils.createEndpoint(XDS.Interactions.ITI_43.getWsTransactionConfiguration().getName(),
+        final String endpoint = HuskyUtils.createRetrievalEndpoint(XDS.Interactions.ITI_43.getWsTransactionConfiguration().getName(),
                 affinityDomain.getRepositoryDestination().getUri(), //
-                atnaConfigMode.equals(AtnaConfigMode.SECURE));
+                atnaConfigMode.equals(AtnaConfigMode.SECURE), //
+                HuskyUtils.RETRIEVE_HTTP_CLIENT_POLICY);
 
         log.info(LOG_SEND_REQUEST, endpoint);
 
         final var exchange = send(endpoint, retrieveDocumentSet, security, messageId, null, xmlAssertion);
 
+        return exchange.getMessage().getBody(RetrievedDocumentSet.class);
+    }
+
+    /**
+     * Retrieves imaging documents (native DICOM instances) from an Imaging Document Source (RAD-69)
+     *
+     * @param imagingReq   the imaging document set request
+     * @param security     a security header element for example an assertion
+     * @param messageId    the message id
+     * @param xmlAssertion the xml assertion
+     * @return the IPF RetrievedDocumentSet
+     * @throws Exception
+     */
+    public RetrievedDocumentSet retrieveImagingDocuments(RetrieveImagingDocumentSet imagingReq,
+                                                          SecurityHeaderElement security,
+                                                          String messageId, String xmlAssertion) throws Exception {
+        final AffinityDomain affinityDomain = getAffinityDomain();
+        final Destination imagingRepositoryDestination = affinityDomain.getImagingRepositoryDestination();
+        if (imagingRepositoryDestination == null) {
+            throw new IllegalStateException(
+                    "No imaging repository destination configured on the AffinityDomain (RAD-69 requires its own endpoint, "
+                            + "distinct from the XDS document repository destination)");
+        }
+        final String endpoint = HuskyUtils.createRetrievalEndpoint(
+                RAD.Interactions.RAD_69.getWsTransactionConfiguration().getName(),
+                imagingRepositoryDestination.getUri(),
+                atnaConfigMode.equals(AtnaConfigMode.SECURE), //
+                HuskyUtils.RETRIEVE_HTTP_CLIENT_POLICY);
+
+        log.info(LOG_SEND_REQUEST, endpoint);
+
+        final var exchange = send(endpoint, imagingReq, security, messageId, null, xmlAssertion);
         return exchange.getMessage().getBody(RetrievedDocumentSet.class);
     }
 

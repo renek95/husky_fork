@@ -284,7 +284,10 @@ public class DocumentMetadata {
 		xDoc.getAuthors().clear();
 		xDoc.getConfidentialityCodes().clear();
 		xDoc.getEventCodeList().clear();
-		xDoc.getExtraMetadata().clear();
+		xDoc.getReferenceIdList().clear();
+		if (xDoc.getExtraMetadata() != null) {
+			xDoc.getExtraMetadata().clear();
+		}
 	}
 
 	/**
@@ -934,9 +937,7 @@ public class DocumentMetadata {
 
 	public void setMetadata(DocumentMetadata metaData) {
 		clear();
-		for (final org.projecthusky.common.model.Author item : metaData.getAuthors()) {
-			addAuthor(item);
-		}
+		getDocumentEntry().getAuthors().addAll(metaData.getDocumentEntry().getAuthors());
 
 		for (final Code item : metaData.getConfidentialityCodes()) {
 			addConfidentialityCode(item);
@@ -957,6 +958,12 @@ public class DocumentMetadata {
 		setTypeCode(metaData.getTypeCode());
 		setUniqueId(metaData.getUniqueId());
 		setUri(metaData.getUri());
+
+		setAvailabilityStatus(metaData.getAvailabilityStatus());
+		getDocumentEntry().getEventCodeList().addAll(metaData.getDocumentEntry().getEventCodeList());
+		getDocumentEntry().getReferenceIdList().addAll(metaData.getDocumentEntry().getReferenceIdList());
+		getDocumentEntry().setServiceStartTime(metaData.getDocumentEntry().getServiceStartTime());
+		getDocumentEntry().setServiceStopTime(metaData.getDocumentEntry().getServiceStopTime());
 
 		// Overwrite defaults done by setPatient:
 		setSourcePatientId(metaData.getSourcePatientId());
@@ -992,6 +999,9 @@ public class DocumentMetadata {
 	 *            the new patient
 	 */
 	public void setPatient(Patient patient) {
+		if (patient == null) {
+			return;
+		}
 		cda.getRecordTarget().add(patient.getMdhtRecordTarget());
 
 		// Source Patient Info (Adress etc.)
