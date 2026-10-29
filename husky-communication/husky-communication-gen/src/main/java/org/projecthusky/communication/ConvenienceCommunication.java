@@ -44,7 +44,6 @@ import org.projecthusky.communication.xd.xdm.IndexHtm;
 import org.projecthusky.communication.xd.xdm.ReadmeTxt;
 import org.projecthusky.communication.xd.xdm.XdmContents;
 import org.projecthusky.fhir.structures.gen.FhirCommon;
-import org.projecthusky.fhir.structures.utils.FhirUtilities;
 import org.projecthusky.xua.core.SecurityHeaderElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
